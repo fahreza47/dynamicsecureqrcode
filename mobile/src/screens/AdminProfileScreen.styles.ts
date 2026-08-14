@@ -1,0 +1,120 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#f8f9fa' },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#212529' },
+  backButton: {
+    padding: 4,
+  },
+  backButtonText: { fontSize: 24, color: '#007BFF', fontWeight: 'bold' }, // Azure Blue
+  content: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
+  avatarCard: {
+    backgroundColor: '#1e293b', // Tetap Navy gelap khas Admin
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#1e293b',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+    borderWidth: 2,
+    borderColor: '#007BFF', // Azure Blue
+  },
+  avatarLetter: { fontSize: 28, fontWeight: 'bold', color: '#007BFF' }, // Azure Blue
+  username: { fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 8 },
+  roleBadge: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#475569',
+  },
+  roleText: { fontSize: 11, fontWeight: 'bold', color: '#007BFF', letterSpacing: 0.5 }, // Azure Blue
+  infoCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  infoTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#6c757d',
+    letterSpacing: 0.8,
+    marginBottom: 16,
+    textTransform: 'uppercase',
+  },
+  layerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  layerRowLast: { marginBottom: 0, paddingBottom: 0, borderBottomWidth: 0 },
+  layerIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#007BFF', // Azure Blue
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 1,
+  },
+  layerIconText: { fontSize: 12, fontWeight: 'bold', color: '#ffffff' }, // Putih agar terbaca
+  layerText: { flex: 1 },
+  layerTitle: { fontSize: 13, fontWeight: 'bold', color: '#212529', marginBottom: 2 },
+  layerDesc: { fontSize: 11, color: '#6c757d', lineHeight: 16 },
+  appInfoCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  appInfoRow: { fontSize: 11, color: '#6c757d', marginBottom: 4, fontFamily: 'monospace' },
+  appInfoLabel: { color: '#94a3b8' },
+  appInfoValue: { color: '#212529', fontWeight: '600' },
+  logoutButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#007BFF', // Azure Blue outline
+    borderRadius: 14,
+    padding: 16,
+    alignItems: 'center',
+  },
+  logoutText: { color: '#dc2626', fontWeight: 'bold', fontSize: 14 },
+});
