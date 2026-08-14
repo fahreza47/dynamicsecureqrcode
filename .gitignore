@@ -1,0 +1,58 @@
+# Node/JavaScript
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+
+# SQLite Databases
+*.db
+*.sqlite3
+
+# React Native / Mobile
+mobile/.expo/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/ios/Pods/
+mobile/ios/build/
+mobile/ios/*.xcworkspace
+*.jks
+
+# Environment variables
+.env*
+!.env.example
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+coverage/
+
+# Documentation/TA specific (Ignored for clean repo)
+screenshots app/
+todolist, project context, dll/

@@ -1,0 +1,6 @@
+{
+  "name": "Dynamic Secure QR Ticketing MVP",
+  "description": "E-Ticketing App Phase 1 - Authentication and Database Setup for TOTP + ECDSA",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
