@@ -41,9 +41,10 @@ mobile/ios/build/
 mobile/ios/*.xcworkspace
 *.jks
 
-# Environment variables
+# Environment variables & Secrets
 .env*
 !.env.example
+*.pem
 
 # OS generated files
 .DS_Store
