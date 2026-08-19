@@ -115,13 +115,16 @@ export const styles = StyleSheet.create({
   warningLink: { fontSize: 12, fontWeight: 'bold', color: '#d97706' },
 
   logoutButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#007BFF', // Azure Blue outline
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: '#dc2626',
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    alignSelf: 'center',
+    width: '60%',
+    marginTop: 8,
     marginBottom: 8,
   },
-  logoutText: { color: '#dc2626', fontWeight: 'bold', fontSize: 14 },
+  logoutText: { color: '#ffffff', fontWeight: 'bold', fontSize: 15 },
 });

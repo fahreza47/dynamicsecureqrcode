@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
-import { BASE_URL } from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL, AUTH_TOKEN_KEY, SESSION_KEY } from '../config';
 import { styles } from './RegisterScreen.styles';
 
 export default function RegisterScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  // [PENTING] Role menentukan seluruh alur pengalaman pengguna:
-  // 'user'  → dapat membeli tiket, melihat QR, scan BLE dari gerbang
-  // 'admin' → dapat memancarkan BLE beacon gerbang, scan & validasi QR penonton
-  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -30,12 +27,24 @@ export default function RegisterScreen({ navigation }: any) {
       const response = await fetch(`${BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, role }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Simpan JWT token dan session
+        await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+        await AsyncStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify({
+            userId: data.id,
+            username: data.username,
+            role: data.role,
+            origin: null,
+          }),
+        );
+
         Alert.alert('Sukses', 'Akun berhasil dibuat. Silakan login.');
         navigation.navigate('Login');
       } else {

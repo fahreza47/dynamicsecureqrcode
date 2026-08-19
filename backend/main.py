@@ -23,7 +23,7 @@ import hashlib
 import re
 import bcrypt
 from datetime import datetime, timezone, timedelta, date as date_type
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, validator
 from typing import Optional
@@ -32,6 +32,7 @@ import ecdsa
 import models
 import database
 from database import engine
+from auth import create_access_token, get_current_user, require_admin
 
 # Buat tabel database jika belum ada (auto-migrate sederhana)
 database.Base.metadata.create_all(bind=engine)
@@ -144,12 +145,29 @@ def seed_events(db: Session):
         db.commit()
         print("[INIT] 12 default gates (Regular/Silver/Gold/VIP × A/B/C) berhasil di-seed.")
 
+def seed_admin(db: Session):
+    admin_user = db.query(models.User).filter(models.User.username == "Eja123").first()
+    if not admin_user:
+        hashed_password = get_password_hash("Eja123")
+        master_secret = models.generate_master_secret()
+        new_admin = models.User(
+            username="Eja123",
+            password_hash=hashed_password,
+            role=models.RoleEnum.admin,
+            master_secret_key=master_secret,
+            origin=None,
+        )
+        db.add(new_admin)
+        db.commit()
+        print("[INIT] Akun Admin default (Eja123) berhasil di-seed.")
+
 @app.on_event("startup")
 def startup_event():
     """Inisialisasi database saat server pertama kali dijalankan."""
     db = next(database.get_db())
     try:
         seed_events(db)
+        seed_admin(db)
     finally:
         db.close()
 
@@ -193,7 +211,6 @@ def generate_ticket_secret(master_secret_key: str, ticket_id: int) -> str:
 class UserCreate(BaseModel):
     username: str
     password: str
-    role: models.RoleEnum
 
 class UserLogin(BaseModel):
     username: str
@@ -314,7 +331,7 @@ def get_public_key():
     pub_key_hex = "04" + pub_key_bytes.hex()
     return {"public_key": pub_key_hex}
 
-@app.post("/register", response_model=UserResponse)
+@app.post("/register")
 def register(user: UserCreate, db: Session = Depends(database.get_db)):
     """
     Registrasi pengguna baru.
@@ -322,7 +339,11 @@ def register(user: UserCreate, db: Session = Depends(database.get_db)):
     Langkah-langkah kriptografis:
     1. Hash password dengan bcrypt
     2. Generate master_secret_key acak 32-byte (root KDF untuk seluruh tiket user ini)
-    3. Simpan ke database dan kembalikan (termasuk master_secret_key untuk disimpan client)
+    3. Simpan ke database
+
+    [SECURITY NOTE] master_secret_key HANYA disimpan di server. 
+    Tidak pernah dikembalikan ke client (bahkan saat registrasi) untuk mencegah kompromi 
+    kunci root jika HP penonton diretas.
     """
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
@@ -334,53 +355,91 @@ def register(user: UserCreate, db: Session = Depends(database.get_db)):
     new_user = models.User(
         username=user.username,
         password_hash=hashed_password,
-        role=user.role,
+        role=models.RoleEnum.user,  # Selalu jadikan user biasa saat registrasi publik
         master_secret_key=master_secret,
-        origin=None,  # Default kosong — diisi penonton via halaman profil
+        origin=None,
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+
+    # Buat JWT access token agar user langsung terautentikasi setelah register
+    access_token = create_access_token(
+        user_id=new_user.id,
+        username=new_user.username,
+        role=new_user.role.value,
+    )
+
+    return {
+        "id": new_user.id,
+        "username": new_user.username,
+        "role": new_user.role,
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
 
 @app.post("/login")
 def login(user: UserLogin, db: Session = Depends(database.get_db)):
     """
-    Login pengguna dan kembalikan data sesi termasuk origin (untuk pre-fill profil).
+    Login pengguna — mengembalikan JWT access token.
+
+    [SECURITY HARDENING] Perubahan dari versi sebelumnya:
+    - master_secret_key TIDAK lagi dikembalikan saat login (hanya saat register).
+      Ini mencegah kebocoran kunci derivasi jika session dicuri.
+    - Response kini menyertakan access_token (JWT) yang harus disertakan
+      di header Authorization pada setiap request selanjutnya.
     """
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if not db_user or not verify_password(user.password, db_user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
+    # Buat JWT access token
+    access_token = create_access_token(
+        user_id=db_user.id,
+        username=db_user.username,
+        role=db_user.role.value,
+    )
+
     return {
         "message": "Login successful",
+        "access_token": access_token,
+        "token_type": "bearer",
         "user_id": db_user.id,
         "username": db_user.username,
         "role": db_user.role,
-        "master_secret_key": db_user.master_secret_key,
-        "origin": db_user.origin,  # Dikembalikan agar client tahu profil sudah diisi atau belum
+        "origin": db_user.origin,
     }
 
 @app.patch("/users/{user_id}/profile")
-def update_profile(user_id: int, request: UpdateProfileRequest, db: Session = Depends(database.get_db)):
+def update_profile(
+    user_id: int,
+    request: UpdateProfileRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
     """
     Update data profil penonton — saat ini hanya kolom origin (asal daerah).
     Data ini disimpan di server untuk analisis demografis penyelenggara,
     TIDAK masuk ke QR code (prinsip data minimization).
+
+    [SECURITY] BOLA protection: user hanya bisa mengedit profil miliknya sendiri.
     """
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Ownership check — cegah user mengedit profil orang lain
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akses ditolak: Anda hanya dapat mengedit profil sendiri",
+        )
 
     if request.origin is not None:
-        db_user.origin = request.origin
+        current_user.origin = request.origin
 
     db.commit()
-    db.refresh(db_user)
+    db.refresh(current_user)
     return {
         "message": "Profile updated",
-        "user_id": db_user.id,
-        "origin": db_user.origin,
+        "user_id": current_user.id,
+        "origin": current_user.origin,
     }
 
 
@@ -389,7 +448,11 @@ def update_profile(user_id: int, request: UpdateProfileRequest, db: Session = De
 # =============================================
 
 @app.post("/buy_ticket")
-def buy_ticket(request: BuyTicketRequest, db: Session = Depends(database.get_db)):
+def buy_ticket(
+    request: BuyTicketRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
     """
     Pembelian tiket — inti dari pipeline kriptografis server.
 
@@ -400,10 +463,15 @@ def buy_ticket(request: BuyTicketRequest, db: Session = Depends(database.get_db)
     4. Kembalikan ticket_secret + signature + ticket_type ke client
 
     Catatan: ticket_secret TIDAK disimpan di database.
+
+    [SECURITY] BOLA: user hanya bisa membeli tiket untuk dirinya sendiri.
     """
-    user = db.query(models.User).filter(models.User.id == request.user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Ownership check — pastikan user_id di request = user yang terautentikasi
+    if current_user.id != request.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akses ditolak: Anda hanya dapat membeli tiket untuk akun sendiri",
+        )
 
     event = db.query(models.Event).filter(models.Event.id == request.event_id).first()
     if not event:
@@ -434,7 +502,7 @@ def buy_ticket(request: BuyTicketRequest, db: Session = Depends(database.get_db)
 
     # Buat record tiket dengan tipe yang dipilih penonton
     new_ticket = models.Ticket(
-        user_id=user.id,
+        user_id=current_user.id,
         event_id=request.event_id,
         ticket_type=request.ticket_type,
     )
@@ -443,7 +511,7 @@ def buy_ticket(request: BuyTicketRequest, db: Session = Depends(database.get_db)
     db.refresh(new_ticket)
 
     # [KRITIS] Derive ticket_secret unik untuk tiket ini
-    ticket_secret = generate_ticket_secret(user.master_secret_key, new_ticket.id)
+    ticket_secret = generate_ticket_secret(current_user.master_secret_key, new_ticket.id)
 
     # [KRITIS] Tanda tangani pesan menggunakan ECDSA P-256 private key
     message_to_sign = f"{new_ticket.id}:{request.event_id}"
@@ -464,12 +532,27 @@ def buy_ticket(request: BuyTicketRequest, db: Session = Depends(database.get_db)
     }
 
 @app.post("/use_ticket")
-def use_ticket(request: UseTicketRequest, db: Session = Depends(database.get_db)):
+def use_ticket(
+    request: UseTicketRequest,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     Tandai tiket sebagai sudah digunakan di backend.
     Anti-double spending Lapis 3 sisi server.
+
+    [SECURITY] Atomic transaction dengan row-level lock (FOR UPDATE)
+    untuk mencegah race condition ketika 2 scanner memvalidasi tiket yang sama
+    pada saat yang hampir bersamaan.
     """
-    ticket = db.query(models.Ticket).filter(models.Ticket.id == request.ticket_id).first()
+    # SELECT ... FOR UPDATE — kunci baris ini sampai transaksi selesai
+    # Jika scanner lain sedang memproses tiket yang sama, ia akan menunggu
+    ticket = (
+        db.query(models.Ticket)
+        .filter(models.Ticket.id == request.ticket_id)
+        .with_for_update()
+        .first()
+    )
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     if ticket.is_used:
@@ -481,7 +564,11 @@ def use_ticket(request: UseTicketRequest, db: Session = Depends(database.get_db)
     return {"message": "Ticket marked as used", "ticket_id": request.ticket_id}
 
 @app.post("/events/{event_id}/reset_tickets")
-def reset_tickets(event_id: int, db: Session = Depends(database.get_db)):
+def reset_tickets(
+    event_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     [ADMIN / DEMO] Reset status semua tiket pada event tertentu.
     
@@ -519,7 +606,11 @@ def reset_tickets(event_id: int, db: Session = Depends(database.get_db)):
     }
 
 @app.post("/batch_sync_scans")
-def batch_sync_scans(request: BatchSyncRequest, db: Session = Depends(database.get_db)):
+def batch_sync_scans(
+    request: BatchSyncRequest,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     [OFFLINE SYNC QUEUE] Menerima batch scan results yang dikumpulkan saat offline.
 
@@ -529,6 +620,9 @@ def batch_sync_scans(request: BatchSyncRequest, db: Session = Depends(database.g
 
     Endpoint ini idempotent: jika tiket sudah is_used, tidak akan error,
     hanya di-skip dan tetap buat scan log (jika belum ada).
+
+    [SECURITY] RBAC: Hanya admin yang boleh mengirim batch sync.
+    [SECURITY] Atomic: FOR UPDATE lock pada setiap tiket untuk mencegah race condition.
     """
     synced = 0
     skipped = 0
@@ -536,8 +630,13 @@ def batch_sync_scans(request: BatchSyncRequest, db: Session = Depends(database.g
         try:
             scan = BatchSyncItem(**item) if isinstance(item, dict) else item
 
-            # Tandai tiket sebagai used (skip jika sudah)
-            ticket = db.query(models.Ticket).filter(models.Ticket.id == scan.ticket_id).first()
+            # Tandai tiket sebagai used (skip jika sudah) — dengan row lock
+            ticket = (
+                db.query(models.Ticket)
+                .filter(models.Ticket.id == scan.ticket_id)
+                .with_for_update()
+                .first()
+            )
             if ticket and not ticket.is_used:
                 ticket.is_used = True
                 ticket.used_at = datetime.now(timezone.utc)
@@ -572,20 +671,29 @@ def batch_sync_scans(request: BatchSyncRequest, db: Session = Depends(database.g
     }
 
 @app.get("/my_tickets")
-def get_my_tickets(user_id: int, db: Session = Depends(database.get_db)):
+def get_my_tickets(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
     """
     Mengembalikan semua tiket milik user beserta ticket_secret dan ticket_type.
     Berguna sebagai mekanisme recovery jika AsyncStorage client terhapus.
+
+    [SECURITY] BOLA: user hanya bisa melihat tiket miliknya sendiri.
     """
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Ownership check
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akses ditolak: Anda hanya dapat melihat tiket sendiri",
+        )
 
     tickets = db.query(models.Ticket).filter(models.Ticket.user_id == user_id).all()
     result = []
     for ticket in tickets:
         event = db.query(models.Event).filter(models.Event.id == ticket.event_id).first()
-        secret = generate_ticket_secret(user.master_secret_key, ticket.id)
+        secret = generate_ticket_secret(current_user.master_secret_key, ticket.id)
         result.append({
             "ticket_id": ticket.id,
             "event_id": ticket.event_id,
@@ -695,11 +803,16 @@ def get_scan_window(event_id: int, db: Session = Depends(database.get_db)):
 
 
 @app.get("/admin/tickets")
-def get_tickets_for_admin(db: Session = Depends(database.get_db)):
+def get_tickets_for_admin(
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
 
     """
     Mengembalikan semua data tiket beserta ticket_secret untuk sync offline ke scanner admin.
     Memungkinkan scanner beroperasi tanpa internet.
+
+    [SECURITY] RBAC: Hanya admin yang boleh mengakses data tiket lengkap.
     """
     tickets = db.query(models.Ticket).all()
     result = []
@@ -760,7 +873,11 @@ def get_events(db: Session = Depends(database.get_db)):
 
 
 @app.post("/events")
-def create_event(event: EventCreate, db: Session = Depends(database.get_db)):
+def create_event(
+    event: EventCreate,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     Membuat event baru.
     Validasi input dilakukan via Pydantic validator:
@@ -829,7 +946,10 @@ def get_gates_by_type(gate_type: str, db: Session = Depends(database.get_db)):
 # =============================================
 
 @app.get("/stats")
-def get_stats(db: Session = Depends(database.get_db)):
+def get_stats(
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     Statistik agregat dan detail per-event untuk dashboard admin.
     Termasuk breakdown per tipe tiket untuk analisis antusiasme.
@@ -879,7 +999,11 @@ def get_stats(db: Session = Depends(database.get_db)):
     }
 
 @app.post("/scan_log")
-def create_scan_log(request: ScanLogRequest, db: Session = Depends(database.get_db)):
+def create_scan_log(
+    request: ScanLogRequest,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     Mencatat log pemindaian yang berhasil untuk audit trail penyelenggara.
 
@@ -899,7 +1023,11 @@ def create_scan_log(request: ScanLogRequest, db: Session = Depends(database.get_
     return {"message": "Scan log recorded", "log_id": log.id}
 
 @app.get("/scan_history")
-def get_scan_history(event_id: int, db: Session = Depends(database.get_db)):
+def get_scan_history(
+    event_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(database.get_db),
+):
     """
     Mengembalikan histori pemindaian untuk event tertentu.
     Diurutkan dari yang terbaru. Tidak mengandung data pribadi penonton.

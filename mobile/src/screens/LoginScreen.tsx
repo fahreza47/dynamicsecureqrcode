@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { styles } from './LoginScreen.styles';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Penyimpanan lokal persisten
-import { BASE_URL, SESSION_KEY } from '../config';
+import { BASE_URL, SESSION_KEY, AUTH_TOKEN_KEY } from '../config';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -37,21 +37,16 @@ export default function LoginScreen({ navigation }: any) {
       const data = await response.json();
 
       if (response.ok) {
-        /*
-         * [KRITIS] Simpan sesi ke AsyncStorage — termasuk masterSecretKey.
-         * masterSecretKey adalah root dari hierarki KDF:
-         *   masterSecretKey → ticket_secret → gate_secret → TOTP
-         * Disimpan lokal agar proses derivasi bisa dilakukan offline di frontend.
-         * (Pada implementasi produksi, pertimbangkan Keychain/Keystore untuk keamanan lebih)
-         */
+        // Simpan JWT token untuk autentikasi request selanjutnya
+        await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+
         await AsyncStorage.setItem(
           SESSION_KEY,
           JSON.stringify({
             userId: data.user_id,
             username: data.username,
             role: data.role,
-            masterSecretKey: data.master_secret_key,
-            origin: data.origin ?? null, // [POIN 3] Simpan origin agar UserDashboard tahu profil sudah diisi
+            origin: data.origin ?? null,
           }),
         );
 

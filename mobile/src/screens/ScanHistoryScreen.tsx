@@ -23,6 +23,7 @@ import {
   Image,
 } from 'react-native';
 import { BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import type { ScanLogEntry } from '../types';
 import AppHeader from '../components/AppHeader';
 import { styles } from './ScanHistoryScreen.styles';
@@ -54,7 +55,7 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
   const fetchHistory = async () => {
     try {
       setError(null);
-      const res = await fetch(`${BASE_URL}/scan_history?event_id=${eventId}`);
+      const res = await authFetch(`${BASE_URL}/scan_history?event_id=${eventId}`);
       if (res.ok) {
         const data: ScanLogEntry[] = await res.json();
         setLogs(data);

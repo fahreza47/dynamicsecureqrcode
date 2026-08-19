@@ -114,13 +114,11 @@ export type EventData = {
 
 /**
  * Sesi pengguna yang disimpan di AsyncStorage setelah login.
- * masterSecretKey adalah root dari hierarki kunci — tidak pernah dikirim ke pihak lain.
  */
 export type UserSession = {
   userId: number;
   username: string;
   role: 'user' | 'admin';
-  masterSecretKey: string; // [KRITIS] Root key KDF
   origin?: string;         // Asal daerah penonton (null jika belum diisi)
 };
 

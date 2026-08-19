@@ -11,6 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { SESSION_KEY, getTicketsKey, BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import type { TicketData } from '../types';
 import AppHeader from '../components/AppHeader';
 import { styles } from './MyTicketsListScreen.styles';
@@ -41,7 +42,7 @@ export default function MyTicketsListScreen({ navigation }: any) {
 
         // Cek status terbaru dari server (fire-and-forget jika gagal)
         try {
-          const res = await fetch(`${BASE_URL}/my_tickets?user_id=${session.userId}`);
+          const res = await authFetch(`${BASE_URL}/my_tickets?user_id=${session.userId}`);
           if (res.ok) {
             const serverTickets: any[] = await res.json();
             // Buat map ticket_id → is_used dari server

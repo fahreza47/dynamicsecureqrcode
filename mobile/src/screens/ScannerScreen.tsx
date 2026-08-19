@@ -36,6 +36,7 @@ import { Buffer } from 'buffer';
 import { p256 } from '@noble/curves/nist.js';    // ECDSA P-256 dari @noble/curves
 // sha256 tidak lagi di-import: p256.verify() melakukan hashing secara internal
 import { BASE_URL, SESSION_KEY } from '../config';
+import { authFetch } from '../utils/authFetch';
 import { styles } from './ScannerScreen.styles';
 import AppHeader from '../components/AppHeader';
 import {
@@ -582,7 +583,7 @@ export default function ScannerScreen({ navigation }: any) {
         return;
       }
 
-      const res = await fetch(`${BASE_URL}/batch_sync_scans`, {
+      const res = await authFetch(`${BASE_URL}/batch_sync_scans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scans: queue }),
@@ -612,8 +613,8 @@ export default function ScannerScreen({ navigation }: any) {
 
       // [LANGKAH 2] Tarik data terbaru dari server (pull)
       const [keyRes, ticketsRes] = await Promise.all([
-        fetch(`${BASE_URL}/public_key`),
-        fetch(`${BASE_URL}/admin/tickets`),
+        authFetch(`${BASE_URL}/public_key`),
+        authFetch(`${BASE_URL}/admin/tickets`),
       ]);
       const keyData = await keyRes.json();
       const ticketsData: Array<{
@@ -691,7 +692,7 @@ export default function ScannerScreen({ navigation }: any) {
     const scanEventId = eventId || ticketEventId;
     if (scanEventId) {
       try {
-        const windowRes = await fetch(`${BASE_URL}/events/${Number(scanEventId)}/scan_window`);
+        const windowRes = await authFetch(`${BASE_URL}/events/${Number(scanEventId)}/scan_window`);
         if (windowRes.ok) {
           const windowData = await windowRes.json();
           if (!windowData.can_scan) {

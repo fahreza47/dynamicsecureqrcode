@@ -109,12 +109,12 @@ export const styles = StyleSheet.create({
   appInfoLabel: { color: '#94a3b8' },
   appInfoValue: { color: '#212529', fontWeight: '600' },
   logoutButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#007BFF', // Azure Blue outline
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: '#dc2626',
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
-  logoutText: { color: '#dc2626', fontWeight: 'bold', fontSize: 14 },
+  logoutText: { color: '#ffffff', fontWeight: 'bold', fontSize: 15 },
 });

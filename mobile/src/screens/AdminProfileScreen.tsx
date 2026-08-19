@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { SESSION_KEY } from '../config';
-import { BASE_URL } from '../config';
+import { SESSION_KEY, AUTH_TOKEN_KEY, BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import AppHeader from '../components/AppHeader';
 import { styles } from './AdminProfileScreen.styles';
 
@@ -55,6 +55,7 @@ export default function AdminProfileScreen({ navigation }: any) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
+          await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
           await AsyncStorage.removeItem(SESSION_KEY);
           navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Auth' }] });
         },
@@ -67,7 +68,7 @@ export default function AdminProfileScreen({ navigation }: any) {
     setShowResetModal(true);
     setLoadingEvents(true);
     try {
-      const res = await fetch(`${BASE_URL}/events`);
+      const res = await authFetch(`${BASE_URL}/events`);
       const data = await res.json();
       setEvents(data.map((e: any) => ({ id: e.id, name: e.name, date: e.date })));
     } catch {
@@ -91,7 +92,7 @@ export default function AdminProfileScreen({ navigation }: any) {
             setResettingEventId(event.id);
             try {
               // 1. Reset di server
-              const res = await fetch(`${BASE_URL}/events/${event.id}/reset_tickets`, {
+              const res = await authFetch(`${BASE_URL}/events/${event.id}/reset_tickets`, {
                 method: 'POST',
               });
               const data = await res.json();
@@ -215,21 +216,32 @@ export default function AdminProfileScreen({ navigation }: any) {
             </Text>
           </View>
 
-          {/* ── Tombol Reset Demo — Untuk Sidang/Demo TA ── */}
-          <TouchableOpacity
-            style={resetStyles.resetButton}
-            onPress={handleOpenResetModal}
-          >
-            <Image
-              source={require('../assets/flaticon/time-past.png')}
-              style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
-            />
-            <Text style={resetStyles.resetButtonText}>Reset Status Tiket (Demo)</Text>
-          </TouchableOpacity>
+          {/* ── Tombol Bawah (Reset & Logout) ── */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 4 }}>
+            {/* Tombol Reset */}
+            <TouchableOpacity
+              style={[resetStyles.resetButton, { flex: 1 }]}
+              onPress={handleOpenResetModal}
+            >
+              <Image
+                source={require('../assets/flaticon/time-past.png')}
+                style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
+              />
+              <Text style={resetStyles.resetButtonText}>Reset Tiket</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
+            {/* Tombol Logout */}
+            <TouchableOpacity 
+              style={[styles.logoutButton, { flex: 1, marginTop: 12 }]} 
+              onPress={handleLogout}
+            >
+              <Image
+                source={require('../assets/flaticon/logout.png')}
+                style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
+              />
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 

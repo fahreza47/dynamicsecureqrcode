@@ -15,6 +15,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { BASE_URL, SESSION_KEY, getTicketsKey } from '../config';
+import { authFetch } from '../utils/authFetch';
 import type { EventData, TicketData, UserTabScreenNavigationProp, UserSession } from '../types';
 import Snackbar from '../components/Snackbar';
 import { styles } from './UserDashboard.styles';
@@ -150,7 +151,7 @@ export default function UserDashboard({ navigation }: Props) {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/events`);
+      const res = await authFetch(`${BASE_URL}/events`);
       if (res.ok) {
         const data: EventData[] = await res.json();
         if (data.length > 0) setEvents(data);
@@ -213,7 +214,7 @@ export default function UserDashboard({ navigation }: Props) {
 
     try {
       setLoadingTicket(true);
-      const response = await fetch(`${BASE_URL}/buy_ticket`, {
+      const response = await authFetch(`${BASE_URL}/buy_ticket`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

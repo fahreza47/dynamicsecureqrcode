@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SESSION_KEY, BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import type { StatsResponse } from '../types';
 import Snackbar from '../components/Snackbar';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -102,7 +103,7 @@ export default function AdminDashboard({ navigation }: any) {
   const fetchStats = async () => {
     try {
       setStatsLoading(true);
-      const res = await fetch(`${BASE_URL}/stats`);
+      const res = await authFetch(`${BASE_URL}/stats`);
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -165,7 +166,7 @@ export default function AdminDashboard({ navigation }: any) {
 
     try {
       setCreateLoading(true);
-      const res = await fetch(`${BASE_URL}/events`, {
+      const res = await authFetch(`${BASE_URL}/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

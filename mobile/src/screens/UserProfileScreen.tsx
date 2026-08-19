@@ -24,7 +24,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { SESSION_KEY, getTicketsKey, BASE_URL } from '../config';
+import { SESSION_KEY, AUTH_TOKEN_KEY, getTicketsKey, BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import Snackbar from '../components/Snackbar';
 import AppHeader from '../components/AppHeader';
 import { styles } from './UserProfileScreen.styles';
@@ -77,6 +78,7 @@ export default function UserProfileScreen({ navigation }: any) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
+          await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
           await AsyncStorage.removeItem(SESSION_KEY);
           navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Auth' }] });
         },
@@ -93,7 +95,7 @@ export default function UserProfileScreen({ navigation }: any) {
     }
     try {
       setSavingOrigin(true);
-      const res = await fetch(`${BASE_URL}/users/${session.userId}/profile`, {
+      const res = await authFetch(`${BASE_URL}/users/${session.userId}/profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ origin: originInput.trim() }),
@@ -256,6 +258,10 @@ export default function UserProfileScreen({ navigation }: any) {
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Image
+            source={require('../assets/flaticon/logout.png')}
+            style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
+          />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
