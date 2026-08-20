@@ -27,6 +27,7 @@ import {
   Platform,
   PermissionsAndroid,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';  // Komponen render QR code
 import * as OTPAuth from 'otpauth';             // Library TOTP sesuai RFC 6238

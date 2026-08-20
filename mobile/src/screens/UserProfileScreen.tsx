@@ -180,6 +180,7 @@ export default function UserProfileScreen({ navigation }: any) {
             <Text style={styles.infoLabel}>Asal Daerah</Text>
             {editingOrigin ? (
               <View style={styles.originEditRow}>
+                <TextInput
                   style={styles.originInput}
                   value={originInput}
                   onChangeText={setOriginInput}
@@ -197,7 +198,6 @@ export default function UserProfileScreen({ navigation }: any) {
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
                       <>
-                        <Image source={require('../assets/flaticon/disk.png')} style={{ width: 16, height: 16, tintColor: '#ffffff', marginRight: 4 }} />
                         <Text style={styles.saveBtnText}>Simpan</Text>
                       </>
                     )}
@@ -259,7 +259,7 @@ export default function UserProfileScreen({ navigation }: any) {
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Image
-            source={require('../assets/flaticon/logout.png')}
+            source={require('../assets/flaticon/user-logout.png')}
             style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
           />
           <Text style={styles.logoutText}>Logout</Text>

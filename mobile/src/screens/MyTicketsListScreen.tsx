@@ -46,23 +46,36 @@ export default function MyTicketsListScreen({ navigation }: any) {
           if (res.ok) {
             const serverTickets: any[] = await res.json();
             // Buat map ticket_id → is_used dari server
-            const usedMap = new Map<number, boolean>();
-            serverTickets.forEach((t: any) => {
-              usedMap.set(t.ticket_id, t.is_used);
-            });
+            // Buat map ticket_id → is_used dari data lokal
+            const localMap = new Map<number, TicketData>();
+            localTickets.forEach(t => localMap.set(t.ticketId, t));
 
-            // Update status is_used di data lokal
             let hasChanges = false;
-            const updatedTickets = localTickets.map(t => {
-              const serverUsed = usedMap.get(t.ticketId);
-              if (serverUsed !== undefined && serverUsed !== (t.isUsed || false)) {
+            // Gunakan serverTickets sebagai sumber utama (source of truth)
+            const updatedTickets: TicketData[] = serverTickets.map((t: any) => {
+              const local = localMap.get(t.ticket_id);
+              if (!local) {
                 hasChanges = true;
-                return { ...t, isUsed: serverUsed };
+                return {
+                  ticketId: t.ticket_id,
+                  eventId: t.event_id,
+                  ticketType: t.ticket_type,
+                  eventName: t.event_name,
+                  eventDate: t.event_date,
+                  ticketSecret: t.ticket_secret,
+                  signature: t.signature,
+                  isUsed: t.is_used,
+                  purchasedAt: new Date().toISOString(), // Fallback if missing
+                };
               }
-              return t;
+              if (local.isUsed !== t.is_used) {
+                hasChanges = true;
+                return { ...local, isUsed: t.is_used };
+              }
+              return local;
             });
 
-            if (hasChanges) {
+            if (hasChanges || updatedTickets.length !== localTickets.length) {
               setTickets(updatedTickets);
               // Persist ke AsyncStorage agar konsisten di session berikutnya
               await AsyncStorage.setItem(ticketsKey, JSON.stringify(updatedTickets));
@@ -153,7 +166,7 @@ export default function MyTicketsListScreen({ navigation }: any) {
           </View>
           <View style={[styles.qrButton, isUsed && usedStyles.qrButtonDisabled]}>
             <Text style={[styles.qrButtonText, isUsed && usedStyles.qrButtonTextDisabled]}>
-              {isUsed ? 'Tidak Tersedia' : 'Tampilkan QR →'}
+              {isUsed ? 'Tidak Tersedia' : 'Tampilkan QR'}
             </Text>
           </View>
         </View>

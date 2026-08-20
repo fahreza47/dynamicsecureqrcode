@@ -76,21 +76,7 @@ export default function RegisterScreen({ navigation }: any) {
           </View>
 
           <View style={styles.form}>
-            {/* Toggle role: Penonton vs Penyelenggara — menentukan fitur yang bisa diakses */}
-            <View style={styles.roleToggleContainer}>
-              <TouchableOpacity
-                style={[styles.roleButton, role === 'user' && styles.roleButtonActive]}
-                onPress={() => setRole('user')}
-              >
-                <Text style={[styles.roleText, role === 'user' && styles.roleTextActive]}>Penonton</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.roleButton, role === 'admin' && styles.roleButtonActive]}
-                onPress={() => setRole('admin')}
-              >
-                <Text style={[styles.roleText, role === 'admin' && styles.roleTextActive]}>Penyelenggara</Text>
-              </TouchableOpacity>
-            </View>
+
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>USERNAME</Text>

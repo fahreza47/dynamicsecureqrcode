@@ -694,6 +694,11 @@ def get_my_tickets(
     for ticket in tickets:
         event = db.query(models.Event).filter(models.Event.id == ticket.event_id).first()
         secret = generate_ticket_secret(current_user.master_secret_key, ticket.id)
+        message_to_sign = f"{ticket.id}:{ticket.event_id}"
+        signature = PRIVATE_KEY.sign(
+            message_to_sign.encode('utf-8'),
+            hashfunc=hashlib.sha256
+        ).hex()
         result.append({
             "ticket_id": ticket.id,
             "event_id": ticket.event_id,
@@ -702,6 +707,7 @@ def get_my_tickets(
             "event_date": event.date if event else "—",
             "event_location": event.location if event else None,
             "ticket_secret": secret,
+            "signature": signature,
             "is_used": ticket.is_used,
         })
     return result

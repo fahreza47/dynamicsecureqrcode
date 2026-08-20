@@ -236,7 +236,7 @@ export default function AdminProfileScreen({ navigation }: any) {
               onPress={handleLogout}
             >
               <Image
-                source={require('../assets/flaticon/logout.png')}
+                source={require('../assets/flaticon/user-logout.png')}
                 style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
               />
               <Text style={styles.logoutText}>Logout</Text>

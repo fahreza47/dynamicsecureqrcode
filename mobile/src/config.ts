@@ -6,7 +6,7 @@
  */
 
 // Alamat IP server backend FastAPI — ganti jika IP jaringan berubah
-export const BASE_URL = 'https://dynamicsecureqrcode-production.up.railway.app/';
+export const BASE_URL = 'https://dynamicsecureqrcode-production.up.railway.app';
 
 // Key penyimpanan sesi pengguna di AsyncStorage (login state)
 export const SESSION_KEY = 'user_session';
