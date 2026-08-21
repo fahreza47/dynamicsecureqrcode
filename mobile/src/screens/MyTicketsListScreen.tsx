@@ -140,7 +140,10 @@ export default function MyTicketsListScreen({ navigation }: any) {
             <Text style={[styles.ticketId, isUsed && usedStyles.textMuted]}>#{item.ticketId}</Text>
           </View>
           <Text style={[styles.eventName, isUsed && usedStyles.textMuted]}>{item.eventName}</Text>
-          <Text style={[styles.eventDate, isUsed && usedStyles.textMuted]}>📅 {item.eventDate}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, tintColor: isUsed ? '#94a3b8' : '#64748b', marginRight: 4 }} />
+            <Text style={[styles.eventDate, { marginBottom: 0 }, isUsed && usedStyles.textMuted]}>{item.eventDate}</Text>
+          </View>
           {item.ticketType && (
             <Text style={[styles.ticketTypeBadge, isUsed && usedStyles.textMuted]}>
               {item.ticketType === 'regular' ? '🔵' :

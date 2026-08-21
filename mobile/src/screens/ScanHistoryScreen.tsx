@@ -139,7 +139,7 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
 
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>⏳</Text>
+      <Image source={require('../assets/flaticon/history.png')} style={{ width: 64, height: 64, tintColor: '#cbd5e1', marginBottom: 16 }} />
       <Text style={styles.emptyTitle}>Belum Ada Pemindaian</Text>
       <Text style={styles.emptySubtitle}>
         Riwayat pemindaian tiket yang berhasil akan muncul di sini setelah scanner digunakan.

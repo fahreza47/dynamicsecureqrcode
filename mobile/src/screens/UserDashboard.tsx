@@ -261,9 +261,22 @@ export default function UserDashboard({ navigation }: Props) {
         <Text style={styles.eventBadgeText}>LIVE</Text>
       </View>
       <Text style={styles.eventName}>{item.name}</Text>
-      {item.location && <Text style={styles.eventVenue}>📍 {item.location}</Text>}
-      <Text style={styles.eventDate}>📅 {item.date}</Text>
-      {item.time && <Text style={styles.eventTime}>🕐 {item.time}</Text>}
+      {item.location && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+          <Image source={require('../assets/flaticon/land-location.png')} style={{ width: 12, height: 12, tintColor: '#64748b', marginRight: 4 }} />
+          <Text style={[styles.eventVenue, { marginTop: 0 }]}>{item.location}</Text>
+        </View>
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+        <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, tintColor: '#64748b', marginRight: 4 }} />
+        <Text style={[styles.eventDate, { marginTop: 0 }]}>{item.date}</Text>
+      </View>
+      {item.time && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+          <Image source={require('../assets/flaticon/clock-three.png')} style={{ width: 12, height: 12, tintColor: '#64748b', marginRight: 4 }} />
+          <Text style={[styles.eventTime, { marginTop: 0 }]}>{item.time}</Text>
+        </View>
+      )}
 
       {/* Sisa kuota tiket per tipe */}
       {(item.quota_regular || item.quota_vip) && (
@@ -335,7 +348,10 @@ export default function UserDashboard({ navigation }: Props) {
           }]}>
             <Text style={styles.modalTitle}>Pilih Tipe Tiket</Text>
             {selectedEvent && (
-              <Text style={styles.modalEventName}>🎵 {selectedEvent.name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', marginBottom: 12 }}>
+                <Image source={require('../assets/flaticon/event.png')} style={{ width: 14, height: 14, tintColor: '#4f46e5', marginRight: 6 }} />
+                <Text style={[styles.modalEventName, { marginBottom: 0 }]}>{selectedEvent.name}</Text>
+              </View>
             )}
             <Text style={styles.modalSubtitle}>
               Tipe tiket menentukan gerbang mana yang dapat kamu akses saat masuk venue.

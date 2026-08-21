@@ -500,7 +500,7 @@ export default function MyTicketScreen({ route, navigation }: any) {
             ) : (
               // Placeholder terkunci — muncul sebelum gate terdeteksi
               <View style={styles.qrPlaceholder}>
-                <Text style={styles.qrPlaceholderIcon}>🔒</Text>
+                <Image source={require('../assets/flaticon/qr-code.png')} style={{ width: 48, height: 48, tintColor: '#cbd5e1', marginBottom: 12 }} />
                 <Text style={styles.qrPlaceholderText}>
                   Menunggu deteksi gerbang{'\n'}untuk membuka QR
                 </Text>
