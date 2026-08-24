@@ -48,12 +48,25 @@ KEY_FILE = "private_key.pem"
 
 def load_or_generate_key() -> SigningKey:
     """
-    Load ECDSA private key dari file jika ada, atau generate baru dan simpan.
-    Curve NIST P-256 dipilih karena keamanan yang baik dan support library yang luas.
+    Load ECDSA private key dari environment variable (prioritas utama untuk platform awan),
+    fallback ke file 'private_key.pem' jika ada, atau generate baru dan simpan.
     """
+    # 1. Cek dari Environment Variable (Railway dll)
+    env_key = os.getenv("ECDSA_PRIVATE_KEY")
+    if env_key:
+        try:
+            # Karena env var mungkin menggunakan \n literal, kita perbaiki dulu
+            clean_key = env_key.replace('\\n', '\n')
+            return SigningKey.from_pem(clean_key.encode('utf-8'))
+        except Exception as e:
+            print(f"[ERROR] Gagal membaca ECDSA_PRIVATE_KEY dari ENV: {e}")
+
+    # 2. Cek dari file lokal
     if os.path.exists(KEY_FILE):
         with open(KEY_FILE, "rb") as f:
             return SigningKey.from_pem(f.read())
+            
+    # 3. Generate baru
     key = SigningKey.generate(curve=NIST256p)
     with open(KEY_FILE, "wb") as f:
         f.write(key.to_pem())
