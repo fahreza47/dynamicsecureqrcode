@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 16,
     backgroundColor: theme.colors.cardBackground,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: theme.colors.primary,
   },
   welcomeSection: { 
     flex: 1 
@@ -34,15 +34,13 @@ export const styles = StyleSheet.create({
     color: theme.colors.textSecondary 
   },
   addEventBtn: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
   },
   addEventBtnText: { 
-    color: theme.colors.primary, 
+    color: theme.colors.white, 
     fontSize: 12, 
     fontWeight: 'bold' 
   },
@@ -75,7 +73,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 6, 
     elevation: 2,
     borderWidth: 1, 
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary,
   },
   statValue: { 
     fontSize: 24, 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, Animated, Platform, TouchableOpacity, View } from 'react-native';
 
 interface SnackbarProps {
@@ -18,8 +18,24 @@ export default function Snackbar({
 }: SnackbarProps) {
   const slideAnim = useRef(new Animated.Value(100)).current; // Mulai tersembunyi di bawah layar
 
+  // [FIX] Dulu ada 2 jalur animasi turun yang saling tumpang tindih: satu manual
+  // (150ms, dipicu tombol Tutup/timer) dan satu lagi otomatis lewat effect (200ms,
+  // dipicu perubahan prop `visible`) — keduanya jalan berurutan tiap kali dismiss.
+  // Sekarang cuma ada SATU jalur: prop `visible` adalah satu-satunya sumber
+  // kebenaran untuk animasi masuk/keluar. `handleDismiss` cuma memanggil
+  // `onDismiss()` (mengubah `visible` di parent), animasi keluarnya ditangani
+  // di sini secara konsisten.
+  //
+  // `rendered` sengaja dipisah dari `visible`: komponen baru benar-benar
+  // unmount (return null) SETELAH animasi slide-down selesai, bukan instan
+  // saat `visible` berubah — supaya animasi keluar selalu sempat kelihatan,
+  // termasuk kalau suatu saat ada kode lain yang set visible=false langsung
+  // tanpa lewat tombol/timer Snackbar ini.
+  const [rendered, setRendered] = useState(visible);
+
   useEffect(() => {
     if (visible) {
+      setRendered(true);
       // Animasi muncul (slide up)
       Animated.spring(slideAnim, {
         toValue: 0,
@@ -28,33 +44,24 @@ export default function Snackbar({
         friction: 8,
       }).start();
 
-      // Mulai timer untuk auto-dismiss
+      // Auto-dismiss — cukup ubah `visible` lewat onDismiss, animasi keluar
+      // ditangani satu tempat saja di branch else bawah ini.
       const timer = setTimeout(() => {
-        handleDismiss();
+        onDismiss();
       }, duration);
 
       return () => clearTimeout(timer);
     } else {
-      // Animasi turun (slide down)
+      // Animasi turun (slide down), baru unmount konten setelah animasi selesai
       Animated.timing(slideAnim, {
         toValue: 100,
         duration: 200,
         useNativeDriver: true,
-      }).start();
+      }).start(() => setRendered(false));
     }
   }, [visible]);
 
-  const handleDismiss = () => {
-    Animated.timing(slideAnim, {
-      toValue: 100,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      onDismiss();
-    });
-  };
-
-  if (!visible) return null;
+  if (!rendered) return null;
 
   const getBgColor = () => {
     switch (type) {
@@ -80,7 +87,7 @@ export default function Snackbar({
     >
       <View style={styles.content}>
         <Text style={styles.text}>{message}</Text>
-        <TouchableOpacity onPress={handleDismiss} style={styles.closeBtn}>
+        <TouchableOpacity onPress={onDismiss} style={styles.closeBtn}>
           <Text style={styles.closeText}>Tutup</Text>
         </TouchableOpacity>
       </View>

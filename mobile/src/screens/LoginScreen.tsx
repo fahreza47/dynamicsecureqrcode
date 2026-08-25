@@ -136,15 +136,15 @@ export default function LoginScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* Branding logo di bagian bawah layar (ikon outlined Azure) */}
-          <View style={styles.bottomLogo}>
+          {/* Branding logo di bagian bawah layar (ikon outlined Azure) */}    
+        </View>
+      </KeyboardAvoidingView>
+      <View style={styles.bottomLogo}>
             <View style={styles.logoBox}>
-              <Image source={require('../assets/app_logo.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
+              <Image source={require('../assets/logo_aplikasi.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
             </View>
             <Text style={styles.logoText}>DYNAMIC SECURE QR CODE</Text>
           </View>
-        </View>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

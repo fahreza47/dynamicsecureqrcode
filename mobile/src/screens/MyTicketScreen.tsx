@@ -44,6 +44,9 @@ import {
   BLE_GATE_PREFIX,                // Prefix "GATE:" untuk identifikasi beacon kita
   filterGatesByTicketType,        // Filter gate berdasarkan tipe tiket penonton
 } from '../utils/bleGate';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SESSION_KEY, BASE_URL } from '../config';
+import { authFetch } from '../utils/authFetch';
 import AppHeader from '../components/AppHeader';
 import { styles } from './MyTicketScreen.styles';
 
@@ -206,6 +209,39 @@ export default function MyTicketScreen({ route, navigation }: any) {
       bleManager.stopDeviceScan();
     };
   }, [startBleScanning]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // [AUTO-EXIT] Polling status tiket dari server
+  // Jika tiket sudah dipindai (is_used = true) oleh admin, otomatis kembali
+  // ke layar sebelumnya agar penonton tidak stuck di layar QR.
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!activeGate) return; // Hanya mulai polling jika QR sudah aktif
+
+    const checkTicketStatus = async () => {
+      try {
+        const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
+        if (!sessionStr) return;
+        const session = JSON.parse(sessionStr);
+
+        const res = await authFetch(`${BASE_URL}/my_tickets?user_id=${session.userId}`);
+        if (res.ok) {
+          const tickets: any[] = await res.json();
+          const currentTicket = tickets.find((t: any) => t.ticket_id === ticketId);
+          if (currentTicket && currentTicket.is_used) {
+            // Tiket sudah discan! Otomatis keluar
+            navigation.goBack();
+          }
+        }
+      } catch (err) {
+        // Gagal fetch (offline dll), biarkan saja.
+      }
+    };
+
+    // Polling setiap 5 detik
+    const interval = setInterval(checkTicketStatus, 5000);
+    return () => clearInterval(interval);
+  }, [activeGate, ticketId, navigation]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // [KRITIS] GATE-BOUND TOTP GENERATION
@@ -381,16 +417,27 @@ export default function MyTicketScreen({ route, navigation }: any) {
           Ini adalah fallback untuk kondisi di mana BLE tidak tersedia
           (HP tidak support, bluetooth mati, atau terlalu jauh dari beacon).
         */}
-        <TouchableOpacity
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity
           style={styles.manualPickerBtn}
           onPress={() => setShowGatePicker(true)}>
           <Text style={styles.manualPickerBtnText}>
             {selectedGate ? `${selectedGate.emoji} ${selectedGate.name} (Manual)` : 'Pilih Gerbang Manual ▼'}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={startBleScanning}>
-          <Text style={styles.reScanText}>Coba Scan BLE Lagi</Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+          style={styles.reScanBtn}
+          onPress={startBleScanning}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image 
+            source={require('../assets/flaticon/reload.png')} 
+            style={{ width: 14, height: 14, tintColor: '#ffffff', marginRight: 4 }} 
+          />
+          <Text style={styles.reScanText}>Pindai Ulang Sinyal BLE</Text>
+          </View> 
+          </TouchableOpacity>
+       </View> 
       </View>
     );
   };

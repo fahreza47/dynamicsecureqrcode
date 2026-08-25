@@ -224,7 +224,7 @@ export default function AdminProfileScreen({ navigation }: any) {
               onPress={handleOpenResetModal}
             >
               <Image
-                source={require('../assets/flaticon/time-past.png')}
+                source={require('../assets/flaticon/reload.png')}
                 style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
               />
               <Text style={resetStyles.resetButtonText}>Reset Tiket</Text>
@@ -279,7 +279,7 @@ export default function AdminProfileScreen({ navigation }: any) {
                     <ActivityIndicator size="small" color="#dc2626" />
                   ) : (
                     <Image
-                      source={require('../assets/flaticon/time-past.png')}
+                      source={require('../assets/flaticon/reload.png')}
                       style={{ width: 20, height: 20, tintColor: '#dc2626' }}
                     />
                   )}

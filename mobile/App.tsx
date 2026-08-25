@@ -17,11 +17,19 @@
 
 import React from 'react';
 import { Platform, Image } from 'react-native';
+import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path, Line, Circle, Polyline } from 'react-native-svg';
 import type { RootStackParamList, UserTabParamList, AdminTabParamList } from './src/types';
+
+// [PERF] Meng-offload screen yang tidak aktif dari native view tree, jadi transisi
+// stack tidak perlu menggerakkan/re-render seluruh screen yang sedang tidak dilihat.
+// Harus dipanggil sekali di awal, sebelum navigator manapun dirender.
+// Idealnya juga dipanggil di index.js sebelum AppRegistry.registerComponent —
+// cek apakah sudah ada di sana juga, kalau ada boleh salah satu saja dihapus.
+enableScreens();
 
 // ── Auth Screens ──────────────────────────────────────────────────────────────
 import LoginScreen from './src/screens/LoginScreen';
@@ -43,8 +51,8 @@ import MyTicketScreen from './src/screens/MyTicketScreen';       // [KRITIS] Tam
 import ScanHistoryScreen from './src/screens/ScanHistoryScreen'; // Histori pemindaian admin per event
 
 // Instance navigator — masing-masing untuk level navigasi yang berbeda
-const RootStack = createStackNavigator<RootStackParamList>();
-const AuthStack = createStackNavigator();
+const RootStack = createNativeStackNavigator<RootStackParamList>();
+const AuthStack = createNativeStackNavigator();
 const UserTab = createBottomTabNavigator<UserTabParamList>();
 const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 
@@ -127,7 +135,7 @@ function AuthNavigator() {
     <AuthStack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS, // Geser horizontal
+        animation: 'slide_from_right', // Geser horizontal (setara forHorizontalIOS, native di kedua platform)
       }}
     >
       <AuthStack.Screen name="Login" component={LoginScreen} />
@@ -228,7 +236,7 @@ export default function App() {
       <RootStack.Navigator
         screenOptions={{
           headerShown: false,
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS, // Geser horizontal
+          animation: 'slide_from_right', // Geser horizontal
         }}
       >
         {/* Layar pertama yang muncul adalah Auth (Login) */}
@@ -248,7 +256,7 @@ export default function App() {
           component={MyTicketScreen}
           options={{
             headerShown: false,
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            animation: 'slide_from_right',
           }}
         />
 
@@ -258,7 +266,7 @@ export default function App() {
           component={ScanHistoryScreen}
           options={{
             headerShown: false,
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            animation: 'slide_from_right',
           }}
         />
       </RootStack.Navigator>

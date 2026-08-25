@@ -8,9 +8,12 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
-  Modal,
+  StyleSheet,
   ScrollView,
   Animated,
+  Image,
+  BackHandler,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -147,6 +150,41 @@ export default function UserDashboard({ navigation }: Props) {
       });
       fetchEvents();
     }, []),
+  );
+
+  // Dashboard adalah landing screen (root tab) setelah login dengan auto-login aktif.
+  // Tombol back Android di sini seharusnya menawarkan keluar aplikasi, BUKAN
+  // mundur ke halaman Login (yang jadi default React Navigation jika tak ditangani).
+  // useFocusEffect memastikan handler ini hanya aktif selagi UserDashboard fokus —
+  // saat user pindah ke screen lain (mis. MyTicketScreen), back tetap mundur normal.
+  //
+  // [PENTING] typeModalVisible dicek dulu: dulu <Modal> RN otomatis menangani
+  // back button sendiri (via onRequestClose) untuk menutup popup pilih tiket.
+  // Sekarang popup itu tidak lagi pakai <Modal>, jadi back button harus
+  // ditangani di sini juga — kalau tidak, back saat popup terbuka akan
+  // langsung memicu dialog "Keluar Aplikasi" alih-alih menutup popup.
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (typeModalVisible) {
+          closeTypeModal();
+          return true;
+        }
+
+        Alert.alert(
+          'Keluar Aplikasi',
+          'Apakah kamu yakin ingin keluar dari aplikasi?',
+          [
+            { text: 'Batal', style: 'cancel' },
+            { text: 'Keluar', style: 'destructive', onPress: () => BackHandler.exitApp() },
+          ],
+        );
+        return true; // Cegah perilaku default (pop ke Login)
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [typeModalVisible]),
   );
 
   const fetchEvents = async () => {

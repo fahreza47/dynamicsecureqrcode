@@ -37,6 +37,12 @@ export default function MyTicketsListScreen({ navigation }: any) {
         const stored = await AsyncStorage.getItem(ticketsKey);
         let localTickets: TicketData[] = stored ? JSON.parse(stored) : [];
 
+        // Sort lokal: yang belum digunakan di atas, yang sudah digunakan di bawah
+        localTickets.sort((a, b) => {
+          if (a.isUsed === b.isUsed) return 0;
+          return a.isUsed ? 1 : -1;
+        });
+        
         // Tampilkan data lokal dulu agar tidak ada loading delay
         setTickets(localTickets);
 
@@ -76,6 +82,10 @@ export default function MyTicketsListScreen({ navigation }: any) {
             });
 
             if (hasChanges || updatedTickets.length !== localTickets.length) {
+              updatedTickets.sort((a, b) => {
+                if (a.isUsed === b.isUsed) return 0;
+                return a.isUsed ? 1 : -1;
+              });
               setTickets(updatedTickets);
               // Persist ke AsyncStorage agar konsisten di session berikutnya
               await AsyncStorage.setItem(ticketsKey, JSON.stringify(updatedTickets));

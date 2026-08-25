@@ -97,7 +97,13 @@ export default function HistoryScreen({ navigation }: any) {
               </View>
             )}
           </View>
-          <Text style={styles.historyEventDate}>📅 {item.eventDate}</Text>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+          <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, marginRight: 4}} />
+          <Text style={styles.historyEventDate}>{item.eventDate}</Text>
+        </View>
+
+
           <View style={styles.historyMeta}>
             <Text style={styles.historyTicketId}>Tiket #{item.ticketId}</Text>
             <Text style={styles.historyTime}>

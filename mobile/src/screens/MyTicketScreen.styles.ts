@@ -18,11 +18,13 @@ export const styles = StyleSheet.create({
   gateBannerTitle: { fontSize: 13, fontWeight: 'bold', color: '#166534' },
   gateBannerSub: { fontSize: 10, color: '#4ade80' },
   gateBannerScanningText: { fontSize: 13, color: '#007BFF', fontWeight: '600' }, // Azure Blue
-  gateBannerMissedText: { fontSize: 12, fontWeight: 'bold', color: '#92400e', marginBottom: 8 },
-  reScanText: { fontSize: 11, color: '#007BFF', fontWeight: 'bold', textDecorationLine: 'underline' }, // Azure Blue
+  gateBannerMissedText: { fontSize: 12, fontWeight: 'bold', color: '#92400e' },
+  reScanBtn: {backgroundColor: '#007BFF',
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, marginLeft: 6,},
+  reScanText: { fontSize: 11, color: '#ffffff', fontWeight: 'bold', marginLeft: 4 }, // Azure Blue
   manualPickerBtn: {
     backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#fcd34d',
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, marginBottom: 6,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10,
   },
   manualPickerBtnText: { fontSize: 12, fontWeight: 'bold', color: '#92400e' },
 

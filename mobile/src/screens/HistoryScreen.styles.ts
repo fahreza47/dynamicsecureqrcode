@@ -103,7 +103,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
   },
   typeBadgeText: { fontSize: 9, fontWeight: 'bold', letterSpacing: 0.5 },
-  historyEventDate: { fontSize: 12, color: '#6c757d', marginBottom: 10 },
+  historyEventDate: { fontSize: 12, color: '#6c757d', marginBottom: 4 },
   historyMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',

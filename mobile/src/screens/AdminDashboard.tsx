@@ -1,19 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
-  Modal,
+  StyleSheet,
   TextInput,
   Alert,
   ActivityIndicator,
   Animated,
   Image,
   Platform,
+  BackHandler,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { SESSION_KEY, BASE_URL } from '../config';
 import { authFetch } from '../utils/authFetch';
 import type { StatsResponse } from '../types';
@@ -85,6 +88,33 @@ export default function AdminDashboard({ navigation }: any) {
     }).start(() => setDetailVisible(false));
   };
 
+  // Animasi Modal Buat Event — dulunya pakai animationType="fade" bawaan <Modal>,
+  // sekarang di-drive manual (fade + scale-in halus) supaya konsisten dengan
+  // modal detail dan tidak lagi bergantung pada <Modal> native.
+  const createSheetAnim = useRef(new Animated.Value(0)).current;
+
+  const openCreateModal = () => {
+    setCreateVisible(true);
+    createSheetAnim.setValue(0);
+
+    Animated.timing(createSheetAnim, {
+      toValue: 1,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeCreateModal = () => {
+    Animated.timing(createSheetAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setCreateVisible(false);
+      setFormError(null);
+    });
+  };
+
   // Jalankan saat layar pertama dibuka atau ketika layar difokuskan kembali
   useEffect(() => {
     AsyncStorage.getItem(SESSION_KEY).then(session => {
@@ -115,6 +145,45 @@ export default function AdminDashboard({ navigation }: any) {
       setStatsLoading(false);
     }
   };
+
+  // Dashboard adalah landing screen (root tab) admin setelah login dengan auto-login aktif.
+  // Tombol back Android di sini seharusnya menawarkan keluar aplikasi, BUKAN
+  // mundur ke halaman Login (yang jadi default React Navigation jika tak ditangani).
+  // useFocusEffect memastikan handler ini hanya aktif selagi AdminDashboard fokus —
+  // saat admin pindah ke screen lain (mis. Scanner), back tetap mundur normal.
+  //
+  // [PENTING] detailVisible/createVisible dicek dulu: dulu <Modal> RN otomatis
+  // menangani back button sendiri (via onRequestClose) untuk menutup overlay.
+  // Sekarang overlay tidak lagi pakai <Modal>, jadi back button harus ditangani
+  // di sini juga — kalau tidak, back saat overlay terbuka akan langsung memicu
+  // dialog "Keluar Aplikasi" alih-alih menutup overlay.
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (detailVisible) {
+          closeDetailModal();
+          return true;
+        }
+        if (createVisible) {
+          closeCreateModal();
+          return true;
+        }
+
+        Alert.alert(
+          'Keluar Aplikasi',
+          'Apakah kamu yakin ingin keluar dari aplikasi?',
+          [
+            { text: 'Batal', style: 'cancel' },
+            { text: 'Keluar', style: 'destructive', onPress: () => BackHandler.exitApp() },
+          ],
+        );
+        return true; // Cegah perilaku default (pop ke Login)
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [detailVisible, createVisible]),
+  );
 
   /** Validasi form buat event di sisi client sebelum hit server */
   const validateCreateEventForm = (): string | null => {
@@ -183,8 +252,7 @@ export default function AdminDashboard({ navigation }: any) {
         setNewEventDate(null);
         setNewEventLocation('');
         setNewEventTime(null);
-        setFormError(null);
-        setCreateVisible(false);
+        closeCreateModal();
         fetchStats();
       } else {
         const errData = await res.json();
@@ -207,6 +275,7 @@ export default function AdminDashboard({ navigation }: any) {
   /** Buka QR scanner khusus untuk event tertentu */
   const handleOpenScanner = (event: any) => {
     setDetailVisible(false);
+    detailSheetAnim.setValue(0); // Reset agar modal berikutnya animasi slide-in lagi, bukan muncul instan
     navigation.navigate('Scanner', {
       eventId: event.id,
       eventName: event.name,
@@ -217,6 +286,7 @@ export default function AdminDashboard({ navigation }: any) {
   /** Buka halaman riwayat pemindaian untuk event tertentu */
   const handleOpenScanHistory = (event: any) => {
     setDetailVisible(false);
+    detailSheetAnim.setValue(0); // Reset agar modal berikutnya animasi slide-in lagi, bukan muncul instan
     navigation.navigate('ScanHistoryScreen', {
       eventId: event.id,
       eventName: event.name,
@@ -232,7 +302,7 @@ export default function AdminDashboard({ navigation }: any) {
             <Text style={styles.subtitle}>Dynamic Secure QR Ticketing</Text>
           </View>
           {/* Tombol "+" untuk membuat event baru */}
-          <TouchableOpacity style={styles.addEventBtn} onPress={() => setCreateVisible(true)}>
+          <TouchableOpacity style={styles.addEventBtn} onPress={openCreateModal}>
             <Text style={styles.addEventBtnText}>+ Buat Event</Text>
           </TouchableOpacity>
         </View>
@@ -269,7 +339,7 @@ export default function AdminDashboard({ navigation }: any) {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 14, height: 14, tintColor: '#6c757d', marginRight: 6 }} />
               <Text style={styles.infoBarText}>
-                {stats.total_events} event aktif terdaftar
+                Total Event Aktif: {stats.total_events}
               </Text>
             </View>
             <TouchableOpacity onPress={fetchStats} disabled={statsLoading}>
@@ -339,7 +409,7 @@ export default function AdminDashboard({ navigation }: any) {
       <Modal
         visible={detailVisible}
         transparent={true}
-        animationType="none" // Menggunakan animasi custom Animated.spring
+        animationType="none"
         onRequestClose={closeDetailModal}
       >
         <View style={styles.modalOverlay}>
@@ -454,7 +524,7 @@ export default function AdminDashboard({ navigation }: any) {
         visible={createVisible}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setCreateVisible(false)}
+        onRequestClose={closeCreateModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -558,7 +628,7 @@ export default function AdminDashboard({ navigation }: any) {
 
             <TouchableOpacity
               style={styles.modalCloseBtn}
-              onPress={() => { setCreateVisible(false); setFormError(null); }}
+              onPress={closeCreateModal}
               disabled={createLoading}
             >
               <Text style={styles.modalCloseBtnText}>Batal</Text>
