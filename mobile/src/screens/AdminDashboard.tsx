@@ -293,17 +293,45 @@ export default function AdminDashboard({ navigation }: any) {
     });
   };
 
+  // Helper thumbnail visual untuk kartu event (Music / Sing / Ticket)
+  const getEventTheme = (index: number) => {
+    const themes = [
+      {
+        icon: require('../assets/flaticon/music-event.png'),
+        bg: '#818cf8', // Soft Indigo / Violet
+      },
+      {
+        icon: require('../assets/flaticon/sing-event.png'),
+        bg: '#fb7185', // Soft Rose Pink
+      },
+      {
+        icon: require('../assets/flaticon/ticket-event.png'),
+        bg: '#fb923c', // Soft Amber Orange
+      },
+    ];
+    return themes[index % themes.length];
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Header Bersih dengan Handwave Pill & Button + Buat Event */}
         <View style={styles.header}>
           <View style={styles.welcomeSection}>
-            <Text style={styles.title}>Halo, {username}</Text>
+            <View style={styles.welcomeRow}>
+              <Text style={styles.title}>Halo, {username}</Text>
+              <View style={styles.waveBadge}>
+                <Text style={styles.waveText}>👋</Text>
+              </View>
+            </View>
             <Text style={styles.subtitle}>Dynamic Secure QR Ticketing</Text>
           </View>
-          {/* Tombol "+" untuk membuat event baru */}
-          <TouchableOpacity style={styles.addEventBtn} onPress={openCreateModal}>
-            <Text style={styles.addEventBtnText}>+ Buat Event</Text>
+          
+          <TouchableOpacity style={styles.addEventBtn} onPress={openCreateModal} activeOpacity={0.85}>
+            <View style={styles.addEventIconCircle}>
+              <Text style={styles.addEventPlusText}>+</Text>
+            </View>
+            <Text style={styles.addEventBtnText}>Buat Event</Text>
           </TouchableOpacity>
         </View>
 
@@ -313,20 +341,40 @@ export default function AdminDashboard({ navigation }: any) {
           <View style={styles.statsRow}>
             {/* Total tiket yang sudah dibeli */}
             <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: '#007BFF' }]}>
+              <View style={[styles.statIconBadge, { backgroundColor: '#eff6ff' }]}>
+                <Image
+                  source={require('../assets/flaticon/tickets.png')}
+                  style={[styles.statIcon, { tintColor: '#3b82f6' }]}
+                />
+              </View>
+              <Text style={[styles.statValue, { color: '#1d4ed8' }]}>
                 {statsLoading ? '…' : stats.total_sold}
               </Text>
               <Text style={styles.statLabel}>Terjual</Text>
             </View>
-            {/* Tiket aktif = terjual - sudah digunakan */}
+
+            {/* Tiket aktif */}
             <View style={styles.statCard}>
+              <View style={[styles.statIconBadge, { backgroundColor: '#f0fdf4' }]}>
+                <Image
+                  source={require('../assets/flaticon/users.png')}
+                  style={[styles.statIcon, { tintColor: '#22c55e' }]}
+                />
+              </View>
               <Text style={[styles.statValue, { color: '#16a34a' }]}>
                 {statsLoading ? '…' : stats.total_active}
               </Text>
               <Text style={styles.statLabel}>Aktif</Text>
             </View>
-            {/* Tiket yang sudah digunakan masuk */}
+
+            {/* Tiket yang sudah digunakan */}
             <View style={styles.statCard}>
+              <View style={[styles.statIconBadge, { backgroundColor: '#fef2f2' }]}>
+                <Image
+                  source={require('../assets/flaticon/check.png')}
+                  style={[styles.statIcon, { tintColor: '#ef4444' }]}
+                />
+              </View>
               <Text style={[styles.statValue, { color: '#dc2626' }]}>
                 {statsLoading ? '…' : stats.total_used}
               </Text>
@@ -334,16 +382,28 @@ export default function AdminDashboard({ navigation }: any) {
             </View>
           </View>
 
-          {/* Info bar jumlah event + tombol refresh manual */}
+          {/* Info bar jumlah event + tombol refresh */}
           <View style={styles.infoBar}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 14, height: 14, tintColor: '#6c757d', marginRight: 6 }} />
+              <Image
+                source={require('../assets/flaticon/calendar.png')}
+                style={{ width: 16, height: 16, tintColor: '#3b82f6', marginRight: 8 }}
+              />
               <Text style={styles.infoBarText}>
                 Total Event Aktif: {stats.total_events}
               </Text>
             </View>
-            <TouchableOpacity onPress={fetchStats} disabled={statsLoading}>
-              <Text style={styles.refreshText}>{statsLoading ? 'Loading...' : 'Refresh'}</Text>
+            <TouchableOpacity
+              style={styles.refreshBtn}
+              onPress={fetchStats}
+              disabled={statsLoading}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={require('../assets/flaticon/reload.png')}
+                style={{ width: 12, height: 12, tintColor: '#2563eb' }}
+              />
+              <Text style={styles.refreshText}>{statsLoading ? '...' : 'Refresh'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -352,49 +412,69 @@ export default function AdminDashboard({ navigation }: any) {
           {statsLoading && stats.events?.length === 0 ? (
             <ActivityIndicator size="large" color="#2563eb" style={{ marginTop: 20 }} />
           ) : stats.events && stats.events.length > 0 ? (
-            stats.events.map(event => (
-              <TouchableOpacity
-                key={event.id}
-                style={styles.eventCard}
-                onPress={() => openDetailModal(event)}
-              >
-                <View style={styles.eventCardHeader}>
-                  <Text style={styles.eventName}>{event.name}</Text>
-                </View>
-                
-                <View style={styles.eventInfoRow}>
-                  <Image source={require('../assets/flaticon/calendar.png')} style={styles.eventInfoIcon} />
-                  <Text style={styles.eventDate}>{event.date}</Text>
-                </View>
-                
-                {event.time && (
-                  <View style={styles.eventInfoRow}>
-                    <Image source={require('../assets/flaticon/clock-three.png')} style={styles.eventInfoIcon} />
-                    <Text style={styles.eventTime}>{event.time}</Text>
-                  </View>
-                )}
+            stats.events.map((event, index) => {
+              const theme = getEventTheme(index);
+              return (
+                <TouchableOpacity
+                  key={event.id}
+                  style={styles.eventCard}
+                  onPress={() => openDetailModal(event)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.eventCardTop}>
+                    {/* Thumbnail Kotak Berwarna */}
+                    <View style={[styles.eventThumbnail, { backgroundColor: theme.bg }]}>
+                      <Image source={theme.icon} style={styles.eventThumbnailIcon} />
+                    </View>
 
-                {event.location && (
-                  <View style={styles.eventInfoRow}>
-                    <Image source={require('../assets/flaticon/land-location.png')} style={styles.eventInfoIcon} />
-                    <Text style={styles.eventLocation}>{event.location}</Text>
+                    {/* Info Metadata Event */}
+                    <View style={styles.eventMetaContainer}>
+                      <Text style={styles.eventName}>{event.name}</Text>
+                      <View style={styles.eventMetaRow}>
+                        <Image source={require('../assets/flaticon/calendar.png')} style={styles.eventMetaIcon} />
+                        <Text style={styles.eventMetaText}>{event.date}</Text>
+                      </View>
+                      {event.time && (
+                        <View style={styles.eventMetaRow}>
+                          <Image source={require('../assets/flaticon/clock-three.png')} style={styles.eventMetaIcon} />
+                          <Text style={styles.eventMetaText}>{event.time}</Text>
+                        </View>
+                      )}
+                      {event.location && (
+                        <View style={styles.eventMetaRow}>
+                          <Image source={require('../assets/flaticon/land-location.png')} style={styles.eventMetaIcon} />
+                          <Text style={styles.eventMetaText}>{event.location}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Chevron Arrow */}
+                    <Text style={styles.eventArrow}>›</Text>
                   </View>
-                )}
-                
-                <View style={styles.eventStatsDivider} />
-                <View style={styles.eventStatsRow}>
-                  <Text style={styles.eventStatText}>
-                    Terjual: <Text style={styles.eventStatVal}>{event.total_sold}</Text>
-                  </Text>
-                  <Text style={styles.eventStatText}>
-                    Aktif: <Text style={[styles.eventStatVal, { color: '#16a34a' }]}>{event.total_active}</Text>
-                  </Text>
-                  <Text style={styles.eventStatText}>
-                    Dipindai: <Text style={[styles.eventStatVal, { color: '#dc2626' }]}>{event.total_used}</Text>
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))
+
+                  {/* Garis Pembatas Halus */}
+                  <View style={styles.eventDivider} />
+
+                  {/* 3 Kolom Statistik Tiket di Bawah */}
+                  <View style={styles.eventStatsGrid}>
+                    <View style={styles.eventStatCol}>
+                      <Text style={styles.eventStatColLabel}>Terjual</Text>
+                      <Text style={[styles.eventStatColVal, { color: '#1d4ed8' }]}>{event.total_sold}</Text>
+                    </View>
+                    <View style={styles.eventStatColDivider} />
+                    <View style={styles.eventStatCol}>
+                      <Text style={styles.eventStatColLabel}>Aktif</Text>
+                      <Text style={[styles.eventStatColVal, { color: '#16a34a' }]}>{event.total_active}</Text>
+                    </View>
+                    <View style={styles.eventStatColDivider} />
+                    <View style={styles.eventStatCol}>
+                      <Text style={styles.eventStatColLabel}>Dipindai</Text>
+                      <Text style={[styles.eventStatColVal, { color: '#dc2626' }]}>{event.total_used}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyText}>Belum ada event terdaftar. Ketuk "Buat Event" di atas untuk menambahkan.</Text>

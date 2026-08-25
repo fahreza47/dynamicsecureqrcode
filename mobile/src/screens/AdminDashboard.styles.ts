@@ -4,191 +4,280 @@ import { theme } from '../styles/theme';
 export const styles = StyleSheet.create({
   safeArea: { 
     flex: 1, 
-    backgroundColor: theme.colors.background 
+    backgroundColor: '#f8fafc',
   },
   scrollContent: { 
-    paddingBottom: 32 
+    paddingBottom: 100,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.xxl,
-    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 16,
-    backgroundColor: theme.colors.cardBackground,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.primary,
+    backgroundColor: '#f8fafc',
   },
   welcomeSection: { 
-    flex: 1 
+    flex: 1,
+  },
+  welcomeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   title: { 
     fontSize: 22, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 2 
+    fontWeight: '800', 
+    color: '#0f172a', 
+  },
+  waveBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  waveText: {
+    fontSize: 16,
   },
   subtitle: { 
-    fontSize: 13, 
-    color: theme.colors.textSecondary 
+    fontSize: 12, 
+    color: '#64748b',
+    fontWeight: '500',
+    marginTop: 2,
   },
   addEventBtn: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
+    gap: 8,
+  },
+  addEventIconCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addEventPlusText: {
+    color: '#2563eb',
+    fontSize: 12,
+    fontWeight: '900',
+    marginTop: -1,
   },
   addEventBtnText: { 
-    color: theme.colors.white, 
+    color: '#ffffff', 
     fontSize: 12, 
-    fontWeight: 'bold' 
+    fontWeight: '700',
   },
   container: { 
-    paddingHorizontal: theme.spacing.xxl 
+    paddingHorizontal: 20,
   },
   sectionHeader: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: theme.colors.textSecondary,
-    letterSpacing: 1,
-    marginTop: 16,
-    marginBottom: 10,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.8,
+    marginTop: 18,
+    marginBottom: 12,
   },
   statsRow: { 
     flexDirection: 'row', 
-    gap: 10, 
+    gap: 12, 
     width: '100%', 
-    marginBottom: 14 
+    marginBottom: 16,
   },
   statCard: {
     flex: 1, 
-    backgroundColor: theme.colors.cardBackground, 
-    borderRadius: 14, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 20, 
     padding: 16,
-    alignItems: 'center', 
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, 
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 }, 
     shadowOpacity: 0.04,
-    shadowRadius: 6, 
+    shadowRadius: 10, 
     elevation: 2,
     borderWidth: 1, 
-    borderColor: theme.colors.primary,
+    borderColor: '#f1f5f9',
+  },
+  statIconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statIcon: {
+    width: 18,
+    height: 18,
   },
   statValue: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 4 
+    fontSize: 22, 
+    fontWeight: '800', 
+    marginBottom: 2,
   },
   statLabel: { 
-    fontSize: 10, 
-    fontWeight: '700', 
-    color: theme.colors.textSecondary 
+    fontSize: 11, 
+    fontWeight: '600', 
+    color: '#64748b',
   },
   infoBar: {
     width: '100%', 
     flexDirection: 'row', 
     justifyContent: 'space-between',
     alignItems: 'center', 
-    backgroundColor: theme.colors.background, 
-    borderRadius: 10,
-    paddingHorizontal: 14, 
-    paddingVertical: 10, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 16,
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
     marginBottom: 16,
     borderWidth: 1, 
-    borderColor: theme.colors.border,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1.5,
   },
   infoBarText: { 
     fontSize: 12, 
-    color: theme.colors.textSecondary 
+    fontWeight: '600',
+    color: '#334155',
+  },
+  refreshBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 4,
   },
   refreshText: { 
-    fontSize: 12, 
-    fontWeight: 'bold', 
-    color: theme.colors.primary 
+    fontSize: 11, 
+    fontWeight: '700', 
+    color: '#2563eb',
   },
   
   // Event Cards
   eventCard: {
-    backgroundColor: theme.colors.cardBackground,
-    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1.5,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  eventCardHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 8 
+  eventCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 12,
+  },
+  eventThumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eventThumbnailIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#ffffff',
+  },
+  eventMetaContainer: {
+    flex: 1,
   },
   eventName: { 
     fontSize: 15, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    flex: 1 
+    fontWeight: '700', 
+    color: '#0f172a', 
+    marginBottom: 5,
   },
-  eventInfoRow: { 
+  eventMetaRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    marginBottom: 4 
+    marginBottom: 3,
   },
-  eventInfoIcon: { 
-    width: 14, 
-    height: 14, 
-    tintColor: '#6c757d', // Abu-abu default
-    marginRight: 6 
+  eventMetaIcon: { 
+    width: 12, 
+    height: 12, 
+    tintColor: '#94a3b8',
+    marginRight: 6,
   },
-  eventDate: { 
+  eventMetaText: { 
     fontSize: 11, 
-    color: theme.colors.textSecondary 
+    color: '#64748b',
+    fontWeight: '500',
   },
-  eventLocation: { 
-    fontSize: 11, 
-    color: theme.colors.textSecondary 
+  eventArrow: {
+    fontSize: 20,
+    color: '#3b82f6',
+    fontWeight: '600',
+    paddingHorizontal: 4,
   },
-  eventTime: { 
-    fontSize: 11, 
-    color: theme.colors.textSecondary 
-  },
-  eventStatsDivider: { 
+  eventDivider: { 
     height: 1, 
     backgroundColor: '#f1f5f9', 
-    marginVertical: 10 
+    marginVertical: 10,
   },
-  eventStatsRow: { 
+  eventStatsGrid: { 
     flexDirection: 'row', 
-    justifyContent: 'space-between' 
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
-  eventStatText: { 
-    fontSize: 11, 
-    color: theme.colors.textSecondary 
+  eventStatCol: {
+    flex: 1,
+    alignItems: 'center',
   },
-  eventStatVal: { 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary 
+  eventStatColLabel: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 3,
+  },
+  eventStatColVal: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  eventStatColDivider: {
+    width: 1,
+    height: 22,
+    backgroundColor: '#f1f5f9',
   },
   emptyCard: { 
-    backgroundColor: theme.colors.background, 
-    borderRadius: 16, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 20, 
     padding: 24, 
     borderWidth: 1, 
     borderStyle: 'dashed', 
     borderColor: '#cbd5e1', 
-    alignItems: 'center' 
+    alignItems: 'center',
+    marginTop: 8,
   },
   emptyText: { 
-    color: theme.colors.textSecondary, 
+    color: '#64748b', 
     fontSize: 12, 
     textAlign: 'center', 
-    lineHeight: 18 
+    lineHeight: 18,
   },
 
   // Modal Styles

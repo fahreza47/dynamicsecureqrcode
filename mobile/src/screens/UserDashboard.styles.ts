@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
   headerGreeting: { fontSize: 22, fontWeight: 'bold', color: '#212529' },
   headerSub: { fontSize: 12, color: '#6c757d', marginTop: 2 },
-  listContainer: { paddingHorizontal: 24, paddingVertical: 24 },
+  listContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 100 },
 
   eventCard: {
     backgroundColor: '#ffffff',
