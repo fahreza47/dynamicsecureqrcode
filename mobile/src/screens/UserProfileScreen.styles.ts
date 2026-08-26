@@ -1,130 +1,348 @@
 import { StyleSheet } from 'react-native';
+import { theme } from '../styles/theme';
 
 export const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f8f9fa' },
-  scrollContent: { paddingHorizontal: 24, paddingBottom: 32 },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
+  safeArea: { 
+    flex: 1, 
+    backgroundColor: '#f8fafc',
   },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#212529' },
-  backButton: { padding: 4 },
-  backButtonText: { fontSize: 24, color: '#007BFF', fontWeight: 'bold' }, // Azure Blue
-
+  scrollContent: { 
+    paddingHorizontal: 20, 
+    paddingTop: 12,
+    paddingBottom: 110,
+  },
+  
+  // Hero Avatar Card
   avatarCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 28,
+    backgroundColor: '#eff6ff', // Soft light blue tint
+    borderRadius: 24,
+    padding: 24,
     alignItems: 'center',
-    marginTop: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
-    elevation: 3,
+    elevation: 2,
+  },
+  avatar: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#2563eb', // Royal Blue
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    borderWidth: 4,
+    borderColor: '#ffffff',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  avatarLetter: { 
+    fontSize: 32, 
+    fontWeight: '800', 
+    color: '#ffffff',
+  },
+  username: { 
+    fontSize: 20, 
+    fontWeight: '800', 
+    color: '#0f172a', 
+    marginBottom: 8,
+  },
+  roleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    gap: 6,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  roleIcon: {
+    width: 14,
+    height: 14,
+    tintColor: '#2563eb',
+  },
+  roleText: { 
+    fontSize: 10.5, 
+    fontWeight: '800', 
+    color: '#2563eb', 
+    letterSpacing: 0.5,
+  },
+
+  // 3-Grid User Stats (Total / Aktif / Digunakan)
+  statsRow: { 
+    flexDirection: 'row', 
+    gap: 12, 
+    width: '100%', 
+    marginBottom: 16,
+  },
+  statCard: {
+    flex: 1, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 20, 
+    padding: 16,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.04,
+    shadowRadius: 10, 
+    elevation: 2,
+    borderWidth: 1, 
+    borderColor: '#f1f5f9',
+  },
+  statIconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statIcon: {
+    width: 18,
+    height: 18,
+  },
+  statValue: { 
+    fontSize: 22, 
+    fontWeight: '800', 
+    marginBottom: 2,
+  },
+  statLabel: { 
+    fontSize: 11, 
+    fontWeight: '600', 
+    color: '#64748b',
+  },
+
+  // Info Cards (Data Diri & Tentang Aplikasi)
+  infoCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 14,
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sectionIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#2563eb',
+  },
+  infoTitle: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    gap: 4,
+  },
+  editBtnIcon: {
+    width: 12,
+    height: 12,
+    tintColor: '#2563eb',
+  },
+  editBtnText: { 
+    fontSize: 11.5, 
+    color: '#2563eb', 
+    fontWeight: '700',
+  },
+  dataNoteBox: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    marginBottom: 14,
+  },
+  dataNoteText: { 
+    fontSize: 11, 
+    color: '#15803d', 
+    lineHeight: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  infoLabel: { 
+    fontSize: 12.5, 
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  infoValue: { 
+    fontSize: 13, 
+    color: '#0f172a', 
+    fontWeight: '700',
+  },
+  infoValueEmpty: { 
+    color: '#94a3b8', 
+    fontStyle: 'italic', 
+    fontWeight: '500',
+  },
+
+  // Edit Origin Inline
+  originEditSection: {
+    marginTop: 8,
+  },
+  originInput: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#0f172a',
+    marginBottom: 10,
+  },
+  originBtnRow: { 
+    flexDirection: 'row', 
+    gap: 8,
+  },
+  saveBtn: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  saveBtnDisabled: { 
+    backgroundColor: '#94a3b8',
+  },
+  saveBtnText: { 
+    color: '#ffffff', 
+    fontSize: 12, 
+    fontWeight: '700',
+  },
+  cancelBtn: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  avatar: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: '#007BFF', // Azure Blue
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 14,
+  cancelBtnText: { 
+    color: '#64748b', 
+    fontSize: 12,
+    fontWeight: '600',
   },
-  avatarLetter: { fontSize: 28, fontWeight: 'bold', color: '#ffffff' }, // Putih agar kontras
-  username: { fontSize: 20, fontWeight: 'bold', color: '#212529', marginBottom: 8 },
-  roleBadge: {
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 12, paddingVertical: 4,
-    borderRadius: 20, borderWidth: 1, borderColor: '#93c5fd', // Azure light border
-  },
-  roleText: { fontSize: 11, fontWeight: 'bold', color: '#007BFF', letterSpacing: 0.5 }, // Azure Blue
-
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  statCard: {
-    flex: 1, backgroundColor: '#ffffff', borderRadius: 14, padding: 16,
-    alignItems: 'center', shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04,
-    shadowRadius: 6, elevation: 2,
-    borderWidth: 1, borderColor: '#e2e8f0',
-  },
-  statValue: { fontSize: 22, fontWeight: 'bold', color: '#212529', marginBottom: 4 },
-  statLabel: { fontSize: 10, color: '#6c757d', fontWeight: '600', textAlign: 'center' },
-
-  infoCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16, padding: 20, marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04,
-    shadowRadius: 6, elevation: 2,
-    borderWidth: 1, borderColor: '#e2e8f0',
-  },
-  infoCardHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12,
-  },
-  infoTitle: {
-    fontSize: 13, fontWeight: 'bold', color: '#6c757d',
-    letterSpacing: 0.5, textTransform: 'uppercase',
-  },
-  editBtn: { fontSize: 13, color: '#007BFF', fontWeight: '600' }, // Azure Blue
-  dataNoteBox: {
-    backgroundColor: '#f0fdf4', borderRadius: 10, padding: 10,
-    borderWidth: 1, borderColor: '#bbf7d0', marginBottom: 14,
-  },
-  dataNoteText: { fontSize: 11, color: '#15803d', lineHeight: 17 },
-  infoRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9',
-  },
-  infoRowLast: { borderBottomWidth: 0 },
-  infoLabel: { fontSize: 13, color: '#6c757d' },
-  infoValue: { fontSize: 13, color: '#212529', fontWeight: '600', flex: 1, textAlign: 'right' },
-  infoValueEmpty: { color: '#94a3b8', fontStyle: 'italic', fontWeight: 'normal' },
-
-  originEditRow: { flex: 1, marginLeft: 12 },
-  originInput: {
-    backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#007BFF', // Azure Blue
-    borderRadius: 8, padding: 8, fontSize: 13, color: '#212529', marginBottom: 8,
-  },
-  originBtnRow: { flexDirection: 'row', gap: 8 },
-  saveBtn: {
-    flex: 1, backgroundColor: '#007BFF', borderRadius: 8, // Azure Blue
-    paddingVertical: 8, alignItems: 'center',
-  },
-  saveBtnDisabled: { backgroundColor: '#94a3b8' },
-  saveBtnText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  cancelBtn: {
-    flex: 1, backgroundColor: '#f1f5f9', borderRadius: 8,
-    paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0',
-  },
-  cancelBtnText: { color: '#6c757d', fontSize: 12 },
 
   warningBox: {
-    backgroundColor: '#fffbeb', borderRadius: 10, padding: 12,
-    borderWidth: 1, borderColor: '#fde68a', marginTop: 10,
-  },
-  warningText: { fontSize: 11, color: '#92400e', lineHeight: 16, marginBottom: 6 },
-  warningLink: { fontSize: 12, fontWeight: 'bold', color: '#d97706' },
-
-  logoutButton: {
-    backgroundColor: '#dc2626',
+    backgroundColor: '#fffbeb',
     borderRadius: 12,
-    paddingVertical: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    marginTop: 12,
+  },
+  warningText: { 
+    fontSize: 11, 
+    color: '#92400e', 
+    lineHeight: 16, 
+    marginBottom: 6,
+  },
+  warningLink: { 
+    fontSize: 12, 
+    fontWeight: '800', 
+    color: '#d97706',
+  },
+
+  // App Info Key-Value Table
+  appInfoRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  appInfoLabel: { 
+    width: 65,
+    fontSize: 12,
+    color: '#64748b', 
+    fontWeight: '500',
+  },
+  appInfoColon: {
+    width: 16,
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  appInfoValue: { 
+    fontSize: 12,
+    color: '#0f172a', 
+    fontWeight: '700',
+  },
+
+  // Logout Button
+  logoutButton: {
+    height: 48,
+    backgroundColor: '#dc2626',
+    borderRadius: 16,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    alignSelf: 'center',
-    width: '60%',
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 4,
+    shadowColor: '#dc2626',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+    gap: 6,
   },
-  logoutText: { color: '#ffffff', fontWeight: 'bold', fontSize: 15 },
+  logoutText: { 
+    color: '#ffffff', 
+    fontWeight: '700', 
+    fontSize: 13,
+  },
 });

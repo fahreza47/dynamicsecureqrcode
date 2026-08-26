@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
     backgroundColor: theme.colors.background 
   },
   scrollContent: { 
-    paddingBottom: 32 
+    paddingBottom: 110,
   },
 
   // Event Banner di dalam Halaman (Pengganti AppHeader Subtitle)

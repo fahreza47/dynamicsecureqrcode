@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 20,
   },
-  listContainer: { paddingHorizontal: 24, paddingVertical: 24 },
+  listContainer: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 110 },
   listContainerEmpty: { flex: 1 },
   historyItem: {
     flexDirection: 'row',

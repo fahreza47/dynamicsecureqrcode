@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +19,7 @@ import { styles } from './MyTicketsListScreen.styles';
 
 export default function MyTicketsListScreen({ navigation }: any) {
   const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   /**
    * useFocusEffect: reload daftar tiket setiap kali tab "Tiket Saya" menjadi aktif.
@@ -27,77 +29,80 @@ export default function MyTicketsListScreen({ navigation }: any) {
    * Jika server menandai tiket sebagai terpakai, update data lokal agar UI menunjukkan
    * badge "Sudah Digunakan" dan menonaktifkan tombol QR.
    */
+  const loadAndSyncTickets = async () => {
+    const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
+    if (!sessionStr) { setTickets([]); return; }
+    const session = JSON.parse(sessionStr);
+    const ticketsKey = getTicketsKey(session.userId);
+    const stored = await AsyncStorage.getItem(ticketsKey);
+    let localTickets: TicketData[] = stored ? JSON.parse(stored) : [];
+
+    // Sort lokal: yang belum digunakan di atas, yang sudah digunakan di bawah
+    localTickets.sort((a, b) => {
+      if (a.isUsed === b.isUsed) return 0;
+      return a.isUsed ? 1 : -1;
+    });
+    
+    // Tampilkan data lokal dulu agar tidak ada loading delay
+    setTickets(localTickets);
+
+    // Cek status terbaru dari server (fire-and-forget jika gagal)
+    try {
+      const res = await authFetch(`${BASE_URL}/my_tickets?user_id=${session.userId}`);
+      if (res.ok) {
+        const serverTickets: any[] = await res.json();
+        const localMap = new Map<number, TicketData>();
+        localTickets.forEach(t => localMap.set(t.ticketId, t));
+
+        let hasChanges = false;
+        const updatedTickets: TicketData[] = serverTickets.map((t: any) => {
+          const local = localMap.get(t.ticket_id);
+          if (!local) {
+            hasChanges = true;
+            return {
+              ticketId: t.ticket_id,
+              eventId: t.event_id,
+              ticketType: t.ticket_type,
+              eventName: t.event_name,
+              eventDate: t.event_date,
+              ticketSecret: t.ticket_secret,
+              signature: t.signature,
+              isUsed: t.is_used,
+              purchasedAt: new Date().toISOString(),
+            };
+          }
+          if (local.isUsed !== t.is_used) {
+            hasChanges = true;
+            return { ...local, isUsed: t.is_used };
+          }
+          return local;
+        });
+
+        if (hasChanges || updatedTickets.length !== localTickets.length) {
+          updatedTickets.sort((a, b) => {
+            if (a.isUsed === b.isUsed) return 0;
+            return a.isUsed ? 1 : -1;
+          });
+          setTickets(updatedTickets);
+          await AsyncStorage.setItem(ticketsKey, JSON.stringify(updatedTickets));
+        }
+      }
+    } catch {
+      // Gagal sync? Tidak masalah
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const loadAndSyncTickets = async () => {
-        const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
-        if (!sessionStr) { setTickets([]); return; }
-        const session = JSON.parse(sessionStr);
-        const ticketsKey = getTicketsKey(session.userId);
-        const stored = await AsyncStorage.getItem(ticketsKey);
-        let localTickets: TicketData[] = stored ? JSON.parse(stored) : [];
-
-        // Sort lokal: yang belum digunakan di atas, yang sudah digunakan di bawah
-        localTickets.sort((a, b) => {
-          if (a.isUsed === b.isUsed) return 0;
-          return a.isUsed ? 1 : -1;
-        });
-        
-        // Tampilkan data lokal dulu agar tidak ada loading delay
-        setTickets(localTickets);
-
-        // Cek status terbaru dari server (fire-and-forget jika gagal)
-        try {
-          const res = await authFetch(`${BASE_URL}/my_tickets?user_id=${session.userId}`);
-          if (res.ok) {
-            const serverTickets: any[] = await res.json();
-            // Buat map ticket_id → is_used dari server
-            // Buat map ticket_id → is_used dari data lokal
-            const localMap = new Map<number, TicketData>();
-            localTickets.forEach(t => localMap.set(t.ticketId, t));
-
-            let hasChanges = false;
-            // Gunakan serverTickets sebagai sumber utama (source of truth)
-            const updatedTickets: TicketData[] = serverTickets.map((t: any) => {
-              const local = localMap.get(t.ticket_id);
-              if (!local) {
-                hasChanges = true;
-                return {
-                  ticketId: t.ticket_id,
-                  eventId: t.event_id,
-                  ticketType: t.ticket_type,
-                  eventName: t.event_name,
-                  eventDate: t.event_date,
-                  ticketSecret: t.ticket_secret,
-                  signature: t.signature,
-                  isUsed: t.is_used,
-                  purchasedAt: new Date().toISOString(), // Fallback if missing
-                };
-              }
-              if (local.isUsed !== t.is_used) {
-                hasChanges = true;
-                return { ...local, isUsed: t.is_used };
-              }
-              return local;
-            });
-
-            if (hasChanges || updatedTickets.length !== localTickets.length) {
-              updatedTickets.sort((a, b) => {
-                if (a.isUsed === b.isUsed) return 0;
-                return a.isUsed ? 1 : -1;
-              });
-              setTickets(updatedTickets);
-              // Persist ke AsyncStorage agar konsisten di session berikutnya
-              await AsyncStorage.setItem(ticketsKey, JSON.stringify(updatedTickets));
-            }
-          }
-        } catch {
-          // Gagal sync? Tidak masalah — tetap tampilkan data lokal terakhir
-        }
-      };
       loadAndSyncTickets();
     }, []),
   );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadAndSyncTickets();
+    setRefreshing(false);
+  };
 
   /**
    * Navigasi ke MyTicketScreen dengan meneruskan data kriptografis tiket.
@@ -212,6 +217,14 @@ export default function MyTicketsListScreen({ navigation }: any) {
         ]}
         ListEmptyComponent={<EmptyState />}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2563eb']}
+            tintColor="#2563eb"
+          />
+        }
       />
     </SafeAreaView>
   );

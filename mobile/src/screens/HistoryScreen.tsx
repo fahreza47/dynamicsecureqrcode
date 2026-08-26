@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   FlatList,
   Image,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native'; // Reload saat tab aktif
@@ -32,35 +33,37 @@ const TICKET_TYPE_CONFIG: Record<string, { label: string; color: string; bg: str
 
 export default function HistoryScreen({ navigation }: any) {
   const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  /**
-   * useFocusEffect: memuat ulang riwayat setiap kali tab "Riwayat" aktif.
-   * Tiket baru disimpan di AsyncStorage dari UserDashboard, sehingga perlu
-   * di-reload agar selalu menampilkan data terbaru tanpa restart app.
-   */
+  const loadHistory = async () => {
+    const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
+    if (!sessionStr) { setTickets([]); return; }
+    const session = JSON.parse(sessionStr);
+    const ticketsKey = getTicketsKey(session.userId);
+    const stored = await AsyncStorage.getItem(ticketsKey);
+    if (stored) {
+      const sorted: TicketData[] = JSON.parse(stored).sort(
+        (a: TicketData, b: TicketData) =>
+          new Date(b.purchasedAt).getTime() -
+          new Date(a.purchasedAt).getTime(),
+      );
+      setTickets(sorted);
+    } else {
+      setTickets([]);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      // Baca tiket dari key per-user agar riwayat tidak bocor antar akun
-      const loadHistory = async () => {
-        const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
-        if (!sessionStr) { setTickets([]); return; }
-        const session = JSON.parse(sessionStr);
-        const ticketsKey = getTicketsKey(session.userId);
-        const stored = await AsyncStorage.getItem(ticketsKey);
-        if (stored) {
-          const sorted: TicketData[] = JSON.parse(stored).sort(
-            (a: TicketData, b: TicketData) =>
-              new Date(b.purchasedAt).getTime() -
-              new Date(a.purchasedAt).getTime(),
-          );
-          setTickets(sorted);
-        } else {
-          setTickets([]);
-        }
-      };
       loadHistory();
     }, []),
   );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadHistory();
+    setRefreshing(false);
+  };
 
   const renderItem = ({ item, index }: { item: TicketData; index: number }) => {
     // Format tanggal dan waktu pembelian ke format Indonesia
@@ -98,11 +101,10 @@ export default function HistoryScreen({ navigation }: any) {
             )}
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-          <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, marginRight: 4}} />
-          <Text style={styles.historyEventDate}>{item.eventDate}</Text>
-        </View>
-
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, marginRight: 4 }} />
+            <Text style={styles.historyEventDate}>{item.eventDate}</Text>
+          </View>
 
           <View style={styles.historyMeta}>
             <Text style={styles.historyTicketId}>Tiket #{item.ticketId}</Text>
@@ -139,6 +141,14 @@ export default function HistoryScreen({ navigation }: any) {
         ]}
         ListEmptyComponent={<EmptyState />}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2563eb']}
+            tintColor="#2563eb"
+          />
+        }
       />
     </SafeAreaView>
   );

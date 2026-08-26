@@ -314,7 +314,18 @@ export default function AdminDashboard({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={statsLoading}
+            onRefresh={fetchStats}
+            colors={['#2563eb']}
+            tintColor="#2563eb"
+          />
+        }
+      >
         {/* Header Bersih dengan Handwave Pill & Button + Buat Event */}
         <View style={styles.header}>
           <View style={styles.welcomeSection}>

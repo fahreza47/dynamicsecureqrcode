@@ -26,6 +26,7 @@ import {
   Modal,
   Image,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as OTPAuth from 'otpauth';           // Library TOTP RFC 6238
@@ -824,7 +825,18 @@ export default function ScannerScreen({ navigation }: any) {
         onBack={() => navigation.goBack()} 
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={syncLoading}
+            onRefresh={() => syncFromBackend(false)}
+            colors={['#2563eb']}
+            tintColor="#2563eb"
+          />
+        }
+      >
 
         {/* Info Event Aktif */}
         <View style={styles.eventBanner}>
