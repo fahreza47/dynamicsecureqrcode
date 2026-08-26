@@ -68,7 +68,7 @@ const CustomTabIcon = ({ source, label, focused }: CustomTabIconProps) => (
         source={source}
         style={[
           tabIconStyles.icon,
-          { tintColor: focused ? '#2563eb' : '#94a3b8' },
+          { tintColor: focused ? '#eff6ff' : '#94a3b8' },
         ]}
       />
     </View>
@@ -77,10 +77,9 @@ const CustomTabIcon = ({ source, label, focused }: CustomTabIconProps) => (
         tabIconStyles.label,
         {
           color: focused ? '#2563eb' : '#94a3b8',
-          fontWeight: focused ? '700' : '500',
+          fontWeight: focused ? '800' : '500',
         },
       ]}
-      numberOfLines={1}
     >
       {label}
     </Text>
@@ -93,29 +92,32 @@ const tabIconStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 4,
+    marginTop: 24,
+    minWidth: 70,
   },
   iconPill: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
     marginBottom: 2,
   },
   activeIconPill: {
-    backgroundColor: '#eff6ff', // Biru pastel muda saat aktif
+    backgroundColor: '#2563eb',
   },
   icon: {
     width: 22,
     height: 22,
   },
   label: {
-    fontSize: 10,
-    letterSpacing: 0.2,
+    fontSize: 9.5,
+    letterSpacing: 0.1,
+    textAlign: 'center',
     marginBottom: 2,
   },
   activeLine: {
     width: 18,
     height: 2.5,
-    backgroundColor: '#2563eb', // Indikator garis biru di bawah tab aktif
+    backgroundColor: '#2563eb',
     borderRadius: 2,
   },
   inactiveLinePlaceholder: {
@@ -128,16 +130,17 @@ const tabIconStyles = StyleSheet.create({
 // Opsi tampilan Floating Modern Tab Bar
 const TAB_BAR_SCREEN_OPTIONS = {
   headerShown: false,
-  tabBarShowLabel: false, // Label ditangani langsung oleh CustomTabIcon
+  tabBarShowLabel: false,
   tabBarStyle: {
     position: 'absolute' as const,
     bottom: Platform.OS === 'ios' ? 24 : 14,
     left: 16,
     right: 16,
+    marginHorizontal: 16,
     backgroundColor: '#ffffff',
     borderRadius: 28,
     height: Platform.OS === 'ios' ? 76 : 68,
-    paddingHorizontal: 8,
+    paddingHorizontal: 2,
     borderTopWidth: 0,
     elevation: 10,
     shadowColor: '#0f172a',

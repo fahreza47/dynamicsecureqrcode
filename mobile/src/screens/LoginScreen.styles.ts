@@ -111,7 +111,8 @@ export const styles = StyleSheet.create({
   },
   bottomLogo: { 
     alignItems: 'center', 
-    marginTop: 40 
+    marginTop: 40,
+    marginBottom: 40
   },
   logoBox: {
     width: 48,

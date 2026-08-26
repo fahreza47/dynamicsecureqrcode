@@ -11,7 +11,7 @@ export default function AppHeader({ title, onBack, showBack = true }: AppHeaderP
   return (
     <View style={styles.header}>
       {showBack && onBack ? (
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+        <TouchableOpacity style={styles.backButtonBox} onPress={onBack} activeOpacity={0.7}>
           <Image source={require('../assets/flaticon/angle-left.png')} style={styles.backIcon} />
         </TouchableOpacity>
       ) : (
@@ -28,24 +28,34 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#007BFF',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+    backgroundColor: '#f8fafc',
   },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-    marginLeft: -8, // Compensate for padding so icon is closer to edge
+  backButtonBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
   backIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#007BFF', // Azure Blue
+    width: 16,
+    height: 16,
+    tintColor: '#2563eb', // Royal Blue
   },
   backPlaceholder: {
-    width: 16, // If no back button, just a little space
+    width: 8,
   },
   titleContainer: {
     flex: 1,
@@ -53,12 +63,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#212529',
-  },
-  subtitle: {
-    fontSize: 11,
-    color: '#6c757d',
-    marginTop: 2,
+    fontWeight: '800',
+    color: '#0f172a',
   },
 });

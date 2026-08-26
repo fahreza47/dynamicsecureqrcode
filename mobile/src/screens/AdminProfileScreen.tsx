@@ -136,28 +136,34 @@ export default function AdminProfileScreen({ navigation }: any) {
     <SafeAreaView style={styles.safeArea}>
       <AppHeader title="Profil Admin" onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Kartu avatar dengan tema dark (dark navy) untuk membedakan dari profil penonton */}
+          {/* Kartu Profil Hero (Soft Pastel Blue) */}
           <View style={styles.avatarCard}>
             <View style={styles.avatar}>
               <Text style={styles.avatarLetter}>{avatarLetter}</Text>
             </View>
             <Text style={styles.username}>{session?.username || '—'}</Text>
             <View style={styles.roleBadge}>
+              <Image
+                source={require('../assets/flaticon/badge.png')}
+                style={styles.roleIcon}
+              />
               <Text style={styles.roleText}>PENYELENGGARA</Text>
             </View>
           </View>
 
-          {/*
-            Panduan 3 Lapis Verifikasi — ringkasan untuk penyelenggara.
-            Ini mencerminkan arsitektur keamanan sistem secara keseluruhan:
-            - Lapis 1 (ECDSA): membuktikan tiket berasal dari server resmi
-            - Lapis 2 (Gate-Bound TOTP): membuktikan QR segar dan dibuat di lokasi gerbang yang tepat
-            - Lapis 3 (Anti-Double Spending): mencegah tiket digunakan lebih dari sekali
-          */}
+          {/* Panduan 3 Lapis Verifikasi Scanner */}
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Panduan Scanner</Text>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionIconBadge}>
+                <Image
+                  source={require('../assets/flaticon/save.png')}
+                  style={styles.sectionIcon}
+                />
+              </View>
+              <Text style={styles.infoTitle}>PANDUAN SCANNER</Text>
+            </View>
 
             {/* LAPIS 1: Verifikasi keaslian tiket via ECDSA P-256 */}
             <View style={styles.layerRow}>
@@ -199,45 +205,61 @@ export default function AdminProfileScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* Informasi teknis singkat — berguna untuk laporan TA */}
+          {/* Informasi Aplikasi */}
           <View style={styles.appInfoCard}>
-            <Text style={styles.appInfoRow}>
-              <Text style={styles.appInfoLabel}>Versi  </Text>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionIconBadge}>
+                <Image
+                  source={require('../assets/flaticon/setting.png')}
+                  style={styles.sectionIcon}
+                />
+              </View>
+              <Text style={styles.infoTitle}>INFORMASI APLIKASI</Text>
+            </View>
+
+            <View style={styles.appInfoRowContainer}>
+              <Text style={styles.appInfoLabel}>Versi</Text>
+              <Text style={styles.appInfoColon}>:</Text>
               <Text style={styles.appInfoValue}>MVP 1.0 — Tugas Akhir</Text>
-            </Text>
-            <Text style={styles.appInfoRow}>
-              <Text style={styles.appInfoLabel}>Kurva  </Text>
+            </View>
+
+            <View style={styles.appInfoRowContainer}>
+              <Text style={styles.appInfoLabel}>Kurva</Text>
+              <Text style={styles.appInfoColon}>:</Text>
               <Text style={styles.appInfoValue}>ECDSA NIST P-256</Text>
-            </Text>
-            <Text style={styles.appInfoRow}>
-              <Text style={styles.appInfoLabel}>KDF    </Text>
-              {/* Key Derivation Function: HMAC-SHA256 digunakan untuk ticket_secret → gate_secret */}
+            </View>
+
+            <View style={styles.appInfoRowContainer}>
+              <Text style={styles.appInfoLabel}>KDF</Text>
+              <Text style={styles.appInfoColon}>:</Text>
               <Text style={styles.appInfoValue}>HMAC-SHA256</Text>
-            </Text>
+            </View>
           </View>
 
           {/* ── Tombol Bawah (Reset & Logout) ── */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 4 }}>
+          <View style={styles.buttonRow}>
             {/* Tombol Reset */}
             <TouchableOpacity
-              style={[resetStyles.resetButton, { flex: 1 }]}
+              style={styles.resetButton}
               onPress={handleOpenResetModal}
+              activeOpacity={0.8}
             >
               <Image
                 source={require('../assets/flaticon/reload.png')}
-                style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
+                style={{ width: 16, height: 16, tintColor: '#ffffff', marginRight: 4 }}
               />
-              <Text style={resetStyles.resetButtonText}>Reset Tiket</Text>
+              <Text style={styles.resetButtonText}>Reset Tiket</Text>
             </TouchableOpacity>
 
             {/* Tombol Logout */}
             <TouchableOpacity 
-              style={[styles.logoutButton, { flex: 1, marginTop: 12 }]} 
+              style={styles.logoutButton} 
               onPress={handleLogout}
+              activeOpacity={0.8}
             >
               <Image
                 source={require('../assets/flaticon/user-logout.png')}
-                style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }}
+                style={{ width: 16, height: 16, tintColor: '#ffffff', marginRight: 4 }}
               />
               <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
