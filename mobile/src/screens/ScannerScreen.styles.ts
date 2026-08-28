@@ -320,133 +320,258 @@ export const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
 
-  // Tombol sinkronisasi
-  syncButton: {
-    backgroundColor: theme.colors.primary, 
-    marginHorizontal: 16, 
-    marginTop: 16,
-    padding: 14, 
-    borderRadius: 12, 
+  // ── Tombol Sinkronisasi & Auto-Sync 1 Row Sejajar ──
+  syncRowContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 14,
     alignItems: 'center',
   },
-  syncButtonText: { 
-    color: theme.colors.white, 
-    fontSize: 12, 
-    fontWeight: 'bold' 
+  syncButtonHalf: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#2563eb', // Royal Blue
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  
-  // Custom Sync Status Info
-  syncStatusContainer: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    backgroundColor: theme.colors.cardBackground,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+  syncButtonHalfContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  syncStatusRow: {
+  syncButtonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+    alignItems: 'center',
+    gap: 6,
   },
-  syncStatusLabel: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
+  syncButtonIcon: {
+    width: 15,
+    height: 15,
+    tintColor: '#ffffff',
   },
-  syncStatusValue: {
-    fontSize: 11,
-    color: theme.colors.textPrimary,
-    fontWeight: 'bold',
-  },
-  syncTimeText: {
-    fontSize: 10,
-    color: theme.colors.textMuted,
+  syncButtonText: {
+    color: '#ffffff',
+    fontSize: 11.5,
+    fontWeight: '800',
     textAlign: 'center',
-    marginTop: 6,
-    fontStyle: 'italic',
+  },
+  syncButtonSubtext: {
+    color: '#eff6ff',
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 1,
   },
 
-  // Sync Settings (Auto-sync picker)
-  syncSettingsContainer: {
+  // Kotak Auto Sync Sebelah Kanan
+  autoSyncBoxHalf: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    justifyContent: 'center',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  autoSyncHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 4,
+    gap: 4,
+    marginLeft: 4,
+    marginBottom: -4,
   },
-  syncSettingsLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: theme.colors.textSecondary,
+  autoSyncIcon: {
+    width: 11,
+    height: 11,
+    tintColor: '#64748b',
+  },
+  autoSyncLabel: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   syncPickerWrapper: {
-    width: 150,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    height: 48,
+    height: 36,
     justifyContent: 'center',
     overflow: 'hidden',
   },
   syncPicker: {
-    height: 48,
-    color: theme.colors.textPrimary,
+    height: 36,
+    color: '#0f172a',
     width: '100%',
     backgroundColor: 'transparent',
   },
 
+  // 4 Grid Statistik Pemindaian
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  statCard: {
+    width: '48%',
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statIcon: {
+    width: 17,
+    height: 17,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10.5,
+    color: '#64748b',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  // Banner Info di Bawah 4 Grid
+  syncInfoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    gap: 8,
+  },
+  infoIconCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoIconImg: {
+    width: 12,
+    height: 12,
+    tintColor: '#2563eb',
+  },
+  syncInfoBannerText: {
+    fontSize: 11,
+    color: '#475569',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+
   // Area feedback hasil validasi
   feedbackContainer: { 
-    minHeight: 72, 
+    minHeight: 68, 
     marginHorizontal: 16, 
-    marginTop: 12, 
-    justifyContent: 'center' 
+    marginTop: 10, 
+    justifyContent: 'center',
+  },
+  waitingFeedbackBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  waitingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#94a3b8',
   },
   waitingText: { 
     textAlign: 'center', 
-    color: theme.colors.textSecondary, 
+    color: '#64748b', 
     fontStyle: 'italic', 
-    fontSize: 13 
+    fontSize: 12.5,
+    fontWeight: '500',
   },
   feedbackAlert: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     padding: 14, 
-    borderRadius: 14, 
+    borderRadius: 18, 
     borderWidth: 1, 
-    gap: 12 
+    gap: 12,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   alertSuccess: { 
     backgroundColor: '#f0fdf4', 
-    borderColor: '#86efac' 
+    borderColor: '#bbf7d0',
   },
   alertError: { 
     backgroundColor: '#fef2f2', 
-    borderColor: '#fecaca' 
+    borderColor: '#fecaca',
   },
-  feedbackIcon: { 
-    fontSize: 22 
+  feedbackBadgeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   feedbackTextGroup: { 
-    flex: 1 
+    flex: 1,
   },
   feedbackMessage: { 
-    fontSize: 13, 
-    fontWeight: 'bold' 
+    fontSize: 13.5, 
+    fontWeight: '800',
   },
   feedbackDetail: { 
     fontSize: 11, 
-    color: theme.colors.textSecondary, 
-    marginTop: 2 
+    color: '#64748b', 
+    marginTop: 2,
+    fontWeight: '500',
   },
   textSuccess: { 
-    color: '#166534' 
+    color: '#15803d',
   },
   textError: { 
-    color: '#991b1b' 
+    color: '#b91c1c',
   },
 });

@@ -66,12 +66,12 @@ export default function Snackbar({
   const getBgColor = () => {
     switch (type) {
       case 'success':
-        return '#007BFF'; // Azure Blue untuk sukses/sinkronisasi
+        return '#2563eb'; // Royal Blue untuk sukses/sinkronisasi
       case 'error':
         return '#dc2626'; // Merah untuk error
       case 'info':
       default:
-        return '#212529'; // Hitam gelap/abu tua untuk info umum
+        return '#0f172a'; // Slate Dark untuk info umum
     }
   };
 
@@ -98,15 +98,15 @@ export default function Snackbar({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 95 : 75, // Melayang di atas bottom tab bar
+    bottom: Platform.OS === 'ios' ? 100 : 90, // Melayang bersih di atas floating bottom tab bar
     left: 16,
     right: 16,
-    borderRadius: 12,
-    elevation: 6,
+    borderRadius: 14,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     zIndex: 9999,
     overflow: 'hidden',
   },

@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   FlatList,
   TouchableOpacity,
@@ -17,17 +16,40 @@ import type { TicketData } from '../types';
 import AppHeader from '../components/AppHeader';
 import { styles } from './MyTicketsListScreen.styles';
 
+// Konfigurasi visual per tipe tiket
+const TICKET_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  regular: { label: 'Regular', color: '#2563eb' },
+  silver:  { label: 'Silver',  color: '#64748b' },
+  gold:    { label: 'Gold',    color: '#d97706' },
+  vip:     { label: 'VIP',     color: '#dc2626' },
+};
+
 export default function MyTicketsListScreen({ navigation }: any) {
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Helper thumbnail visual untuk kartu event (Music / Sing / Ticket)
+  const getEventTheme = (index: number) => {
+    const themes = [
+      {
+        icon: require('../assets/flaticon/music-event.png'),
+        bg: '#818cf8', // Soft Indigo / Violet
+      },
+      {
+        icon: require('../assets/flaticon/sing-event.png'),
+        bg: '#fb7185', // Soft Rose Pink
+      },
+      {
+        icon: require('../assets/flaticon/ticket-event.png'),
+        bg: '#fb923c', // Soft Amber Orange
+      },
+    ];
+    return themes[index % themes.length];
+  };
+
   /**
    * useFocusEffect: reload daftar tiket setiap kali tab "Tiket Saya" menjadi aktif.
    * Membaca key per-user (user_tickets_${userId}) agar tiket tidak bocor antar akun.
-   *
-   * [FITUR BARU] Setelah memuat data lokal, cek status terbaru dari server (is_used).
-   * Jika server menandai tiket sebagai terpakai, update data lokal agar UI menunjukkan
-   * badge "Sudah Digunakan" dan menonaktifkan tombol QR.
    */
   const loadAndSyncTickets = async () => {
     const sessionStr = await AsyncStorage.getItem(SESSION_KEY);
@@ -106,11 +128,9 @@ export default function MyTicketsListScreen({ navigation }: any) {
 
   /**
    * Navigasi ke MyTicketScreen dengan meneruskan data kriptografis tiket.
-   * ticketSecret dan signature adalah data paling penting — diperlukan untuk
-   * generate Gate-Bound TOTP dan verifikasi ECDSA di layar QR.
    */
   const handleOpenQR = (ticket: TicketData) => {
-    if (ticket.isUsed) return; // Blokir navigasi jika tiket sudah digunakan
+    if (ticket.isUsed) return;
     navigation.navigate('MyTicketScreen', {
       ticketId: ticket.ticketId,
       ticketSecret: ticket.ticketSecret,
@@ -122,83 +142,140 @@ export default function MyTicketsListScreen({ navigation }: any) {
     });
   };
 
-  const renderItem = ({ item }: { item: TicketData }) => {
-    // Format tanggal pembelian ke format Indonesia
+  // Hitung jumlah statistik untuk 3-grid di atas
+  const totalCount = tickets.length;
+  const activeCount = tickets.filter(t => !t.isUsed).length;
+  const usedCount = tickets.filter(t => t.isUsed).length;
+
+  const renderItem = ({ item, index }: { item: TicketData; index: number }) => {
     const purchasedDate = new Date(item.purchasedAt).toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
 
-    const isUsed = item.isUsed || false;
+    const isUsed = Boolean(item.isUsed);
+    const themeItem = getEventTheme(index);
+    const typeConfig = TICKET_TYPE_MAP[item.ticketType?.toLowerCase() || 'regular'] || {
+      label: item.ticketType || 'Regular',
+      color: '#2563eb',
+    };
 
     return (
-      <TouchableOpacity
-        style={[styles.ticketCard, isUsed && usedStyles.ticketCardUsed]}
-        onPress={() => handleOpenQR(item)}
-        activeOpacity={isUsed ? 1 : 0.85}
-        disabled={isUsed}
-      >
-        {/* Badge "SUDAH DIGUNAKAN" — overlay di atas kartu */}
-        {isUsed && (
-          <View style={usedStyles.usedOverlay}>
-            <Text style={usedStyles.usedBadge}>✓ SUDAH DIGUNAKAN</Text>
-          </View>
-        )}
-
-        {/* Bagian atas kartu tiket (desain menyerupai tiket fisik) */}
+      <View style={[styles.ticketCard, isUsed && styles.ticketCardUsed]}>
+        {/* Bagian Atas Tiket */}
         <View style={styles.ticketTop}>
-          <View style={styles.ticketHeader}>
-            <View style={[styles.eventBadge, isUsed && usedStyles.badgeUsed]}>
+          <View style={styles.ticketHeaderRow}>
+            <View style={styles.eventBadge}>
               <Text style={styles.eventBadgeText}>E-TICKET</Text>
             </View>
-            <Text style={[styles.ticketId, isUsed && usedStyles.textMuted]}>#{item.ticketId}</Text>
+
+            {isUsed ? (
+              <View style={styles.usedBadge}>
+                <Image
+                  source={require('../assets/flaticon/check-no-bg.png')}
+                  style={styles.usedBadgeIcon}
+                />
+                <Text style={styles.usedBadgeText}>SUDAH DIGUNAKAN</Text>
+              </View>
+            ) : (
+              <Text style={styles.ticketId}>#{item.ticketId}</Text>
+            )}
           </View>
-          <Text style={[styles.eventName, isUsed && usedStyles.textMuted]}>{item.eventName}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-            <Image source={require('../assets/flaticon/calendar.png')} style={{ width: 12, height: 12, tintColor: isUsed ? '#94a3b8' : '#64748b', marginRight: 4 }} />
-            <Text style={[styles.eventDate, { marginBottom: 0 }, isUsed && usedStyles.textMuted]}>{item.eventDate}</Text>
+
+          {/* Baris Utama: Thumbnail + Info Event + QR Silhouette */}
+          <View style={styles.ticketMainRow}>
+            {/* Thumbnail Kategori Event */}
+            <View style={[styles.eventThumbnail, { backgroundColor: isUsed ? '#cbd5e1' : themeItem.bg }]}>
+              <Image source={themeItem.icon} style={styles.eventThumbnailIcon} />
+            </View>
+
+            {/* Info Nama, Tanggal, dan Tipe Tiket */}
+            <View style={styles.ticketInfoCol}>
+              <Text
+                style={[styles.eventName, isUsed && styles.eventNameUsed]}
+                numberOfLines={1}
+              >
+                {item.eventName}
+              </Text>
+
+              <View style={styles.metaRow}>
+                <Image
+                  source={require('../assets/flaticon/calendar.png')}
+                  style={styles.metaIcon}
+                />
+                <Text style={styles.metaText}>{item.eventDate}</Text>
+              </View>
+
+              <View style={styles.metaRow}>
+                <View
+                  style={[
+                    styles.typeDot,
+                    { backgroundColor: isUsed ? '#94a3b8' : typeConfig.color },
+                  ]}
+                />
+                <Text style={styles.typeText}>{typeConfig.label}</Text>
+              </View>
+            </View>
+
+            {/* Watermark / Silhouette QR di Kanan */}
+            <View style={styles.qrSilhouetteBox}>
+              <Image
+                source={require('../assets/flaticon/qr-code.png')}
+                style={styles.qrSilhouetteIcon}
+              />
+            </View>
           </View>
-          {item.ticketType && (
-            <Text style={[styles.ticketTypeBadge, isUsed && usedStyles.textMuted]}>
-              {item.ticketType === 'regular' ? '🔵' :
-               item.ticketType === 'silver'  ? '⚪' :
-               item.ticketType === 'gold'    ? '🟡' : '🔴'}
-              {' '}{item.ticketType.charAt(0).toUpperCase() + item.ticketType.slice(1)}
-            </Text>
+        </View>
+
+        {/* Garis Pembatas Putus-putus dengan Lekukan Sobekan Tiket Fisik */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.notchLeft} />
+          <View style={styles.dashedDivider} />
+          <View style={styles.notchRight} />
+        </View>
+
+        {/* Bagian Bawah: Tanggal Beli & Tombol Tampilkan QR */}
+        <View style={styles.ticketBottom}>
+          <View style={styles.purchasedCol}>
+            <View style={styles.purchasedBadge}>
+              <Text style={styles.purchasedBadgeText}>DIBELI</Text>
+            </View>
+            <Text style={styles.purchasedDateText}>{purchasedDate}</Text>
+          </View>
+
+          {isUsed ? (
+            <View style={styles.disabledBtn}>
+              <Text style={styles.disabledBtnText}>Tidak Tersedia</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.showQrBtn}
+              onPress={() => handleOpenQR(item)}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={require('../assets/flaticon/qr-code.png')}
+                style={styles.showQrIcon}
+              />
+              <Text style={styles.showQrText}>Tampilkan QR</Text>
+            </TouchableOpacity>
           )}
         </View>
-
-        {/* Garis pemisah bergaya tiket sobek (torn ticket effect) */}
-        <View style={styles.divider}>
-          <View style={styles.dividerCircleLeft} />
-          <View style={styles.dividerDashed} />
-          <View style={styles.dividerCircleRight} />
-        </View>
-
-        {/* Bagian bawah kartu: tanggal beli & tombol buka QR */}
-        <View style={styles.ticketBottom}>
-          <View>
-            <Text style={styles.purchasedLabel}>DIBELI</Text>
-            <Text style={[styles.purchasedDate, isUsed && usedStyles.textMuted]}>{purchasedDate}</Text>
-          </View>
-          <View style={[styles.qrButton, isUsed && usedStyles.qrButtonDisabled]}>
-            <Text style={[styles.qrButtonText, isUsed && usedStyles.qrButtonTextDisabled]}>
-              {isUsed ? 'Tidak Tersedia' : 'Tampilkan QR'}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
   // Tampilan saat belum ada tiket yang dibeli
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Image source={require('../assets/flaticon/ticket.png')} style={{ width: 64, height: 64, tintColor: '#9ca3af', marginBottom: 16 }} />
+      <Image
+        source={require('../assets/flaticon/tickets.png')}
+        style={styles.emptyIcon}
+      />
       <Text style={styles.emptyTitle}>Belum Ada Tiket</Text>
       <Text style={styles.emptySubtitle}>
-        Tiket yang telah dibeli di tab Beranda akan muncul di sini.
+        Tiket yang telah kamu beli di tab Beranda akan muncul di sini.
       </Text>
     </View>
   );
@@ -215,6 +292,49 @@ export default function MyTicketsListScreen({ navigation }: any) {
           styles.listContainer,
           tickets.length === 0 && styles.listContainerEmpty,
         ]}
+        ListHeaderComponent={
+          tickets.length > 0 ? (
+            <View>
+              {/* 3 Grid Statistik Tiket di Atas */}
+              <View style={styles.statsRow}>
+                <View style={styles.statCard}>
+                  <View style={[styles.statIconBadge, { backgroundColor: '#eff6ff' }]}>
+                    <Image
+                      source={require('../assets/flaticon/tickets.png')}
+                      style={[styles.statIcon, { tintColor: '#3b82f6' }]}
+                    />
+                  </View>
+                  <Text style={[styles.statValue, { color: '#1d4ed8' }]}>{totalCount}</Text>
+                  <Text style={styles.statLabel}>Total Tiket</Text>
+                </View>
+
+                <View style={styles.statCard}>
+                  <View style={[styles.statIconBadge, { backgroundColor: '#f0fdf4' }]}>
+                    <Image
+                      source={require('../assets/flaticon/users.png')}
+                      style={[styles.statIcon, { tintColor: '#22c55e' }]}
+                    />
+                  </View>
+                  <Text style={[styles.statValue, { color: '#16a34a' }]}>{activeCount}</Text>
+                  <Text style={styles.statLabel}>Aktif</Text>
+                </View>
+
+                <View style={styles.statCard}>
+                  <View style={[styles.statIconBadge, { backgroundColor: '#fef2f2' }]}>
+                    <Image
+                      source={require('../assets/flaticon/check.png')}
+                      style={[styles.statIcon, { tintColor: '#ef4444' }]}
+                    />
+                  </View>
+                  <Text style={[styles.statValue, { color: '#dc2626' }]}>{usedCount}</Text>
+                  <Text style={styles.statLabel}>Digunakan</Text>
+                </View>
+              </View>
+
+              <Text style={styles.sectionTitle}>DAFTAR TIKET SAYA</Text>
+            </View>
+          ) : null
+        }
         ListEmptyComponent={<EmptyState />}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -229,38 +349,3 @@ export default function MyTicketsListScreen({ navigation }: any) {
     </SafeAreaView>
   );
 }
-
-// Styles khusus untuk tiket yang sudah digunakan
-const usedStyles = StyleSheet.create({
-  ticketCardUsed: {
-    opacity: 0.7,
-  },
-  usedOverlay: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 10,
-    backgroundColor: '#6b7280',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  usedBadge: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  badgeUsed: {
-    backgroundColor: '#9ca3af',
-  },
-  textMuted: {
-    color: '#9ca3af',
-  },
-  qrButtonDisabled: {
-    backgroundColor: '#e5e7eb',
-  },
-  qrButtonTextDisabled: {
-    color: '#9ca3af',
-  },
-});

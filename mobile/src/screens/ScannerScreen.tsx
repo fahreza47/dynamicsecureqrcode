@@ -253,6 +253,7 @@ export default function ScannerScreen({ navigation }: any) {
   // State Offline Sync Queue: jumlah scan yang menunggu dikirim ke server
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
   const [totalTicketCount, setTotalTicketCount] = useState<number>(0);
+  const [syncLoading, setSyncLoading] = useState<boolean>(false);
 
   // [FIX] Gunakan useFocusEffect agar setiap kali screen mendapat fokus,
   // izin kamera dan BLE dicek ulang. Ini mengatasi masalah fresh install
@@ -609,6 +610,7 @@ export default function ScannerScreen({ navigation }: any) {
 
   const syncFromBackend = async (isSilent = false) => {
     try {
+      setSyncLoading(true);
       // [LANGKAH 1] Kirim antrian offline ke server terlebih dahulu (push)
       await flushSyncQueue(true);
 
@@ -656,6 +658,8 @@ export default function ScannerScreen({ navigation }: any) {
       if (!isSilent) {
         showSnackbar('Gagal memuat data dari server. Pastikan laptop/server online.', 'error');
       }
+    } finally {
+      setSyncLoading(false);
     }
   };
 
@@ -831,7 +835,7 @@ export default function ScannerScreen({ navigation }: any) {
         refreshControl={
           <RefreshControl
             refreshing={syncLoading}
-            onRefresh={() => syncFromBackend(false)}
+            onRefresh={() => syncFromBackend(true)}
             colors={['#2563eb']}
             tintColor="#2563eb"
           />
@@ -990,74 +994,125 @@ export default function ScannerScreen({ navigation }: any) {
           )}
         </View>
 
-        {/* ── Tombol Sinkronisasi — wajib dilakukan saat online sebelum bertugas ── */}
-        <TouchableOpacity style={styles.syncButton} onPress={() => syncFromBackend(false)}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Image source={require('../assets/flaticon/sync.png')} style={{ width: 18, height: 18, tintColor: '#ffffff', marginRight: 8 }} />
-            <Text style={styles.syncButtonText}>Sinkronkan Data E-Ticket</Text>
-          </View>
-        </TouchableOpacity>
-        {/* Sync Settings (Auto Sync Selector) */}
-        <View style={styles.syncSettingsContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image source={require('../assets/flaticon/sync.png')} style={{ width: 14, height: 14, tintColor: '#6c757d', marginRight: 6 }} />
-            <Text style={styles.syncSettingsLabel}>Auto Sync berkala:</Text>
-          </View>
-          <View style={styles.syncPickerWrapper}>
-            <Picker
-              selectedValue={autoSyncInterval}
-              onValueChange={(val: number) => setAutoSyncInterval(val)}
-              style={[styles.syncPicker, { color: '#212529' }]}
-              dropdownIconColor="#007BFF"
-            >
-              <Picker.Item label="Matikan" value={0} color="#212529" />
-              <Picker.Item label="1 Menit" value={1} color="#212529" />
-              <Picker.Item label="5 Menit" value={5} color="#212529" />
-              <Picker.Item label="10 Menit" value={10} color="#212529" />
-            </Picker>
+        {/* ── Tombol Sinkronisasi & Auto-Sync (1 Row Sejajar) ── */}
+        <View style={styles.syncRowContainer}>
+          {/* Tombol Sinkronisasi Kiri */}
+          <TouchableOpacity
+            style={styles.syncButtonHalf}
+            onPress={() => syncFromBackend(false)}
+            activeOpacity={0.85}
+            disabled={syncLoading}
+          >
+            <View style={styles.syncButtonHalfContent}>
+              <View style={styles.syncButtonRow}>
+                <Image
+                  source={require('../assets/flaticon/sync.png')}
+                  style={styles.syncButtonIcon}
+                />
+                <Text style={styles.syncButtonText}>Sinkronkan Data</Text>
+              </View>
+              <Text style={styles.syncButtonSubtext}>E-Ticket</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Kotak Auto-Sync Kanan */}
+          <View style={styles.autoSyncBoxHalf}>
+            <View style={styles.autoSyncHeader}>
+              <Image
+                source={require('../assets/flaticon/reload.png')}
+                style={styles.autoSyncIcon}
+              />
+              <Text style={styles.autoSyncLabel}>Auto Sync:</Text>
+            </View>
+            <View style={styles.syncPickerWrapper}>
+              <Picker
+                selectedValue={autoSyncInterval}
+                onValueChange={(val: number) => setAutoSyncInterval(val)}
+                style={styles.syncPicker}
+                dropdownIconColor="#2563eb"
+              >
+                <Picker.Item label="Mati" value={0} />
+                <Picker.Item label="1 Menit" value={1} />
+                <Picker.Item label="5 Menit" value={5} />
+                <Picker.Item label="10 Menit" value={10} />
+              </Picker>
+            </View>
           </View>
         </View>
 
-        {/* Statistik Tiket — Grid 2×2 */}
-        <View style={localStyles.statsGrid}>
-          <View style={localStyles.statCard}>
-            <Image source={require('../assets/flaticon/disk.png')} style={localStyles.statIcon} />
-            <Text style={localStyles.statValue}>{localActiveCount ?? '—'}</Text>
-            <Text style={localStyles.statLabel}>Aktif di Lokal</Text>
+        {/* ── 4 Grid Statistik Pemindaian (Lokal, Server, Dipindai, Total) ── */}
+        <View style={styles.statsGrid}>
+          {/* Aktif di Lokal */}
+          <View style={styles.statCard}>
+            <View style={[styles.statIconBadge, { backgroundColor: '#eff6ff' }]}>
+              <Image
+                source={require('../assets/flaticon/disk.png')}
+                style={[styles.statIcon, { tintColor: '#2563eb' }]}
+              />
+            </View>
+            <Text style={styles.statValue}>{localActiveCount ?? '—'}</Text>
+            <Text style={styles.statLabel}>Aktif di Lokal</Text>
           </View>
-          <View style={localStyles.statCard}>
-            <Image source={require('../assets/flaticon/sync.png')} style={[localStyles.statIcon, { tintColor: '#007BFF' }]} />
-            <Text style={localStyles.statValue}>{serverActiveCount ?? '—'}</Text>
-            <Text style={localStyles.statLabel}>Aktif di Server</Text>
+
+          {/* Aktif di Server */}
+          <View style={styles.statCard}>
+            <View style={[styles.statIconBadge, { backgroundColor: '#f0fdf4' }]}>
+              <Image
+                source={require('../assets/flaticon/reload.png')}
+                style={[styles.statIcon, { tintColor: '#16a34a' }]}
+              />
+            </View>
+            <Text style={styles.statValue}>{serverActiveCount ?? '—'}</Text>
+            <Text style={styles.statLabel}>Aktif di Server</Text>
           </View>
-          <View style={localStyles.statCard}>
-            <Image source={require('../assets/flaticon/checked.png')} style={[localStyles.statIcon, { tintColor: '#22c55e' }]} />
-            <Text style={localStyles.statValue}>{scannedCount}</Text>
-            <Text style={localStyles.statLabel}>Sudah Dipindai</Text>
+
+          {/* Sudah Dipindai */}
+          <View style={styles.statCard}>
+            <View style={[styles.statIconBadge, { backgroundColor: '#f0fdf4' }]}>
+              <Image
+                source={require('../assets/flaticon/check-no-bg.png')}
+                style={[styles.statIcon, { tintColor: '#22c55e' }]}
+              />
+            </View>
+            <Text style={styles.statValue}>{scannedCount}</Text>
+            <Text style={styles.statLabel}>Sudah Dipindai</Text>
           </View>
-          <View style={localStyles.statCard}>
-            <Image source={require('../assets/flaticon/ticket.png')} style={[localStyles.statIcon, { tintColor: '#d97706' }]} />
-            <Text style={localStyles.statValue}>{totalTicketCount}</Text>
-            <Text style={localStyles.statLabel}>Total Tiket</Text>
+
+          {/* Total Tiket */}
+          <View style={styles.statCard}>
+            <View style={[styles.statIconBadge, { backgroundColor: '#fff7ed' }]}>
+              <Image
+                source={require('../assets/flaticon/ticket.png')}
+                style={[styles.statIcon, { tintColor: '#ea580c' }]}
+              />
+            </View>
+            <Text style={styles.statValue}>{totalTicketCount}</Text>
+            <Text style={styles.statLabel}>Total Tiket</Text>
           </View>
         </View>
-        {lastSyncTime ? (
-          <Text style={styles.syncTimeText}>
-            (Disinkronkan pukul {lastSyncTime.toLocaleTimeString()})
-          </Text>
-        ) : (
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 8 }}>
-            <Image source={require('../assets/flaticon/triangle-warning.png')} style={{ width: 12, height: 12, tintColor: '#dc2626', marginRight: 4 }} />
-            <Text style={[styles.syncTimeText, { marginTop: 0 }]}>
-              Belum sinkron — tekan tombol di atas saat online
-            </Text>
+
+        {/* ── Banner Info Status Sinkronisasi ── */}
+        <View style={styles.syncInfoBanner}>
+          <View style={styles.infoIconCircle}>
+            <Image
+              source={require('../assets/flaticon/info.png')}
+              style={styles.infoIconImg}
+            />
           </View>
-        )}
+          <Text style={styles.syncInfoBannerText}>
+            {lastSyncTime
+              ? `Disinkronkan pukul ${lastSyncTime.toLocaleTimeString('id-ID')}`
+              : 'Belum sinkron — tekan tombol di atas saat online'}
+          </Text>
+        </View>
 
         {/* ── Indikator Antrian Offline Sync ── */}
         {pendingSyncCount > 0 && (
           <View style={localStyles.pendingBanner}>
-            <Image source={require('../assets/flaticon/sync.png')} style={{ width: 16, height: 16, tintColor: '#92400e', marginRight: 8 }} />
+            <Image
+              source={require('../assets/flaticon/sync.png')}
+              style={{ width: 16, height: 16, tintColor: '#92400e', marginRight: 8 }}
+            />
             <View style={{ flex: 1 }}>
               <Text style={localStyles.pendingText}>
                 {pendingSyncCount} tiket menunggu sinkronisasi ke server
@@ -1069,15 +1124,45 @@ export default function ScannerScreen({ navigation }: any) {
           </View>
         )}
 
-        {/* ── Area Feedback Validasi — menampilkan hasil verifikasi tiket ── */}
+        {/* ── Area Feedback Validasi — Menampilkan Hasil Verifikasi Tiket ── */}
         <View style={styles.feedbackContainer}>
           {scanFeedback ? (
-            <View style={[styles.feedbackAlert, scanFeedback.status === 'success' ? styles.alertSuccess : styles.alertError]}>
-              <Text style={styles.feedbackIcon}>
-                {scanFeedback.status === 'success' ? '✅' : '❌'}
-              </Text>
+            <View
+              style={[
+                styles.feedbackAlert,
+                scanFeedback.status === 'success' ? styles.alertSuccess : styles.alertError,
+              ]}
+            >
+              <View
+                style={[
+                  styles.feedbackBadgeCircle,
+                  {
+                    backgroundColor:
+                      scanFeedback.status === 'success' ? '#dcfce7' : '#fee2e2',
+                  },
+                ]}
+              >
+                <Image
+                  source={
+                    scanFeedback.status === 'success'
+                      ? require('../assets/flaticon/check-no-bg.png')
+                      : require('../assets/flaticon/x-no-bg.png')
+                  }
+                  style={{
+                    width: 18,
+                    height: 18,
+                    tintColor: scanFeedback.status === 'success' ? '#16a34a' : '#dc2626',
+                  }}
+                />
+              </View>
+
               <View style={styles.feedbackTextGroup}>
-                <Text style={[styles.feedbackMessage, scanFeedback.status === 'success' ? styles.textSuccess : styles.textError]}>
+                <Text
+                  style={[
+                    styles.feedbackMessage,
+                    scanFeedback.status === 'success' ? styles.textSuccess : styles.textError,
+                  ]}
+                >
                   {scanFeedback.message}
                 </Text>
                 {scanFeedback.detail && (
@@ -1086,7 +1171,10 @@ export default function ScannerScreen({ navigation }: any) {
               </View>
             </View>
           ) : (
-            <Text style={styles.waitingText}>Menunggu pemindaian QR...</Text>
+            <View style={styles.waitingFeedbackBox}>
+              <View style={styles.waitingDot} />
+              <Text style={styles.waitingText}>Menunggu pemindaian QR...</Text>
+            </View>
           )}
         </View>
 

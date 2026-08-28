@@ -14,7 +14,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   FlatList,
   ActivityIndicator,
@@ -28,12 +27,15 @@ import type { ScanLogEntry } from '../types';
 import AppHeader from '../components/AppHeader';
 import { styles } from './ScanHistoryScreen.styles';
 
-// Konfigurasi warna dan emoji per tipe tiket — konsisten dengan bleGate.ts
-const TICKET_TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; emoji: string }> = {
-  regular: { label: 'Regular', color: '#007BFF', bg: '#eff6ff', emoji: '🔵' }, // Azure Blue
-  silver:  { label: 'Silver',  color: '#64748b', bg: '#f8f9fa', emoji: '⚪' },
-  gold:    { label: 'Gold',    color: '#d97706', bg: '#fffbeb', emoji: '🟡' },
-  vip:     { label: 'VIP',     color: '#dc2626', bg: '#fef2f2', emoji: '🔴' },
+// Konfigurasi warna per tipe tiket
+const TICKET_TYPE_CONFIG: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+  regular: { label: 'REGULAR', color: '#2563eb', bg: '#eff6ff' },
+  silver:  { label: 'SILVER',  color: '#64748b', bg: '#f8fafc' },
+  gold:    { label: 'GOLD',    color: '#d97706', bg: '#fffbeb' },
+  vip:     { label: 'VIP',     color: '#dc2626', bg: '#fef2f2' },
 };
 
 type Props = { route: any; navigation: any };
@@ -47,7 +49,6 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Update judul header dengan nama event
     navigation.setOptions({ title: `Riwayat: ${eventName || 'Event'}` });
     fetchHistory();
   }, [eventId]);
@@ -78,58 +79,98 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
   const formatTime = (isoStr: string) => {
     if (!isoStr) return '—';
     const date = new Date(isoStr);
-    return date.toLocaleString('id-ID', {
+    const dateStr = date.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
+    });
+    const timeStr = date.toLocaleTimeString('id-ID', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-    });
+    }).replace(/:/g, '.');
+
+    return `${dateStr} • ${timeStr}`;
   };
 
-  /** Format gate_id menjadi tampilan yang lebih ramah — misal: "regular_a" → "Regular A" */
+  /** Format gate_id menjadi tampilan yang lebih ramah — misal: "silver_c" → "SILVER C" */
   const formatGateId = (gateId: string) => {
     return gateId.replace('_', ' ').toUpperCase();
   };
 
   const renderItem = ({ item, index }: { item: ScanLogEntry; index: number }) => {
-    const typeConfig = TICKET_TYPE_CONFIG[item.ticket_type] || TICKET_TYPE_CONFIG.regular;
+    const typeConfig = TICKET_TYPE_CONFIG[item.ticket_type?.toLowerCase() || 'regular'] || TICKET_TYPE_CONFIG.regular;
 
     return (
       <View style={styles.logItem}>
-        {/* Kolom timeline */}
+        {/* Kolom Garis Timeline & Dot */}
         <View style={styles.timelineCol}>
           <View style={[styles.timelineDot, { backgroundColor: typeConfig.color }]} />
           {index < logs.length - 1 && <View style={styles.timelineLine} />}
         </View>
 
-        {/* Kartu log */}
+        {/* Kartu Log Pemindaian */}
         <View style={styles.logCard}>
-          {/* Header: tipe tiket + waktu */}
+          {/* Header Kartu: Tipe Tiket + Waktu Pemindaian */}
           <View style={styles.logCardHeader}>
-            <View style={[styles.typeBadge, { backgroundColor: typeConfig.bg, borderColor: typeConfig.color }]}>
-              <Text style={styles.typeEmoji}>{typeConfig.emoji}</Text>
-              <Text style={[styles.typeLabel, { color: typeConfig.color }]}>{typeConfig.label}</Text>
-            </View>
-            <Text style={styles.logTime}>{formatTime(item.scanned_at)}</Text>
-          </View>
-
-          {/* Detail */}
-          <View style={styles.logDetails}>
-            <View style={styles.logDetailRow}>
-              <Text style={styles.logDetailKey}>ID Tiket</Text>
-              <Text style={styles.logDetailValue}>#{item.ticket_id}</Text>
-            </View>
-            <View style={styles.logDetailRow}>
-              <Text style={styles.logDetailKey}>Gerbang</Text>
-              <Text style={[styles.logDetailValue, { color: typeConfig.color, fontWeight: 'bold' }]}>
-                {formatGateId(item.gate_id)}
+            <View style={styles.typeBadge}>
+              <View style={[styles.typeDot, { backgroundColor: typeConfig.color }]} />
+              <Text style={[styles.typeLabel, { color: typeConfig.color }]}>
+                {typeConfig.label}
               </Text>
             </View>
-            <View style={styles.logDetailRow}>
-              <Text style={styles.logDetailKey}>Log ID</Text>
-              <Text style={styles.logDetailValue}>#{item.log_id}</Text>
+
+            <View style={styles.timeRow}>
+              <Image
+                source={require('../assets/flaticon/calendar.png')}
+                style={styles.timeIcon}
+              />
+              <Text style={styles.logTime}>{formatTime(item.scanned_at)}</Text>
+            </View>
+          </View>
+
+          {/* 3 Baris Info Terstruktur */}
+          <View style={styles.logDetailsContainer}>
+            {/* ID Tiket */}
+            <View style={styles.logRowBox}>
+              <View style={styles.logRowLeft}>
+                <View style={styles.logRowIconBox}>
+                  <Image
+                    source={require('../assets/flaticon/ticket.png')}
+                    style={styles.logRowIcon}
+                  />
+                </View>
+                <Text style={styles.logKey}>ID Tiket</Text>
+              </View>
+              <Text style={styles.logVal}>#{item.ticket_id}</Text>
+            </View>
+
+            {/* Gerbang */}
+            <View style={styles.logRowBox}>
+              <View style={styles.logRowLeft}>
+                <View style={styles.logRowIconBox}>
+                  <Image
+                    source={require('../assets/flaticon/gate.png')}
+                    style={styles.logRowIcon}
+                  />
+                </View>
+                <Text style={styles.logKey}>Gerbang</Text>
+              </View>
+              <Text style={styles.logVal}>{formatGateId(item.gate_id)}</Text>
+            </View>
+
+            {/* Log ID */}
+            <View style={styles.logRowBox}>
+              <View style={styles.logRowLeft}>
+                <View style={styles.logRowIconBox}>
+                  <Image
+                    source={require('../assets/flaticon/disk.png')}
+                    style={styles.logRowIcon}
+                  />
+                </View>
+                <Text style={styles.logKey}>Log ID</Text>
+              </View>
+              <Text style={styles.logVal}>#{item.log_id}</Text>
             </View>
           </View>
         </View>
@@ -139,7 +180,10 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
 
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Image source={require('../assets/flaticon/history.png')} style={{ width: 64, height: 64, tintColor: '#cbd5e1', marginBottom: 16 }} />
+      <Image
+        source={require('../assets/flaticon/history.png')}
+        style={styles.emptyIcon}
+      />
       <Text style={styles.emptyTitle}>Belum Ada Pemindaian</Text>
       <Text style={styles.emptySubtitle}>
         Riwayat pemindaian tiket yang berhasil akan muncul di sini setelah scanner digunakan.
@@ -149,7 +193,10 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
 
   const ErrorState = () => (
     <View style={styles.emptyContainer}>
-      <Image source={require('../assets/flaticon/triangle-warning.png')} style={{ width: 48, height: 48, tintColor: '#d97706', marginBottom: 16 }} />
+      <Image
+        source={require('../assets/flaticon/triangle-warning.png')}
+        style={{ width: 48, height: 48, tintColor: '#dc2626', marginBottom: 16 }}
+      />
       <Text style={styles.emptyTitle}>Gagal Memuat Data</Text>
       <Text style={styles.emptySubtitle}>{error}</Text>
       <TouchableOpacity style={styles.retryButton} onPress={fetchHistory}>
@@ -163,7 +210,7 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
       <SafeAreaView style={styles.safeArea}>
         <AppHeader title="Riwayat Pemindaian" onBack={() => navigation.goBack()} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007BFF" />
+          <ActivityIndicator size="large" color="#2563eb" />
           <Text style={styles.loadingText}>Memuat riwayat...</Text>
         </View>
       </SafeAreaView>
@@ -173,17 +220,43 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppHeader title="Riwayat Pemindaian" onBack={() => navigation.goBack()} />
-      {/* Header info event */}
-      <View style={styles.eventBanner}>
-        <Text style={styles.eventBannerTitle}>{eventName}</Text>
-        <Text style={styles.eventBannerCount}>{logs.length} pemindaian</Text>
-      </View>
 
-      {/* Catatan privasi */}
-      <View style={styles.privacyNote}>
-        <Text style={styles.privacyNoteText}>
-          🔒 Data minimization: histori ini tidak memuat identitas pribadi penonton.
-        </Text>
+      {/* Hero Event Banner & Data Minimization Note di Atas */}
+      <View style={styles.heroCard}>
+        <View style={styles.eventBannerRow}>
+          <View style={styles.eventThumbnail}>
+            <Image
+              source={require('../assets/flaticon/music-event.png')}
+              style={styles.eventThumbnailIcon}
+            />
+          </View>
+          <Text style={styles.eventBannerTitle} numberOfLines={1}>
+            {eventName || 'Event'}
+          </Text>
+          <Text style={styles.eventBannerCount}>{logs.length} pemindaian</Text>
+        </View>
+
+        {/* Catatan Privasi (Data Minimization) */}
+        <View style={styles.privacyBanner}>
+          <View style={styles.privacyIconBox}>
+            <Image
+              source={require('../assets/flaticon/privacy.png')}
+              style={styles.privacyIcon}
+            />
+          </View>
+          <View style={styles.privacyTextBox}>
+            <Text style={styles.privacyTitle}>Data minimization</Text>
+            <Text style={styles.privacySubtitle}>
+              Histori ini tidak menyimpan atau menampilkan identitas pribadi penonton.
+            </Text>
+          </View>
+          <View style={styles.privacyCheckCircle}>
+            <Image
+              source={require('../assets/flaticon/check-no-bg.png')}
+              style={styles.privacyCheckIcon}
+            />
+          </View>
+        </View>
       </View>
 
       <FlatList
@@ -195,19 +268,16 @@ export default function ScanHistoryScreen({ route, navigation }: Props) {
           (logs.length === 0 || error) && styles.listContainerEmpty,
         ]}
         ListEmptyComponent={error ? <ErrorState /> : <EmptyState />}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#007BFF']}
-            tintColor="#007BFF"
+            colors={['#2563eb']}
+            tintColor="#2563eb"
           />
         }
-        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
 }
-
-
-
