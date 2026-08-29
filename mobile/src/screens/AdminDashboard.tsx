@@ -22,6 +22,7 @@ import { SESSION_KEY, BASE_URL } from '../config';
 import { authFetch } from '../utils/authFetch';
 import type { StatsResponse } from '../types';
 import Snackbar from '../components/Snackbar';
+import CustomDialog, { DialogType } from '../components/CustomDialog';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { styles } from './AdminDashboard.styles';
 
@@ -38,13 +39,30 @@ export default function AdminDashboard({ navigation }: any) {
   const [username, setUsername] = useState('Admin');          // Nama penyelenggara dari sesi
   const [stats, setStats] = useState<StatsResponse>(DEFAULT_STATS); // Statistik tiket dari backend
   const [statsLoading, setStatsLoading] = useState(true);    // Status loading statistik
+  const [refreshing, setRefreshing] = useState(false);        // Status pull-to-refresh
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null); // Event yang diklik untuk lihat detail
+  const [detailVisible, setDetailVisible] = useState(false);  // Kontrol modal detail
+  const [createVisible, setCreateVisible] = useState(false);  // Kontrol modal buat event baru
+  const [createLoading, setCreateLoading] = useState(false);  // Loading saat submit form buat event
 
-  // State untuk modal detail event
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
-  const [detailVisible, setDetailVisible] = useState(false);
+  // State untuk CustomDialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    visible: boolean;
+    type?: DialogType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmStyle?: 'default' | 'danger';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
-  // State untuk modal buat event baru
-  const [createVisible, setCreateVisible] = useState(false);
   const [newEventName, setNewEventName] = useState('');
   const [newEventDate, setNewEventDate] = useState<Date | null>(null);
   const [newEventTime, setNewEventTime] = useState<Date | null>(null);
@@ -52,8 +70,6 @@ export default function AdminDashboard({ navigation }: any) {
   
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
-
-  const [createLoading, setCreateLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Snackbar State
@@ -170,14 +186,20 @@ export default function AdminDashboard({ navigation }: any) {
           return true;
         }
 
-        Alert.alert(
-          'Keluar Aplikasi',
-          'Apakah kamu yakin ingin keluar dari aplikasi?',
-          [
-            { text: 'Batal', style: 'cancel' },
-            { text: 'Keluar', style: 'destructive', onPress: () => BackHandler.exitApp() },
-          ],
-        );
+        setDialogConfig({
+          visible: true,
+          type: 'warning',
+          title: 'Keluar Aplikasi',
+          message: 'Apakah kamu yakin ingin keluar dari aplikasi?',
+          cancelText: 'Batal',
+          confirmText: 'Keluar',
+          confirmStyle: 'danger',
+          onCancel: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+          onConfirm: () => {
+            setDialogConfig(prev => ({ ...prev, visible: false }));
+            BackHandler.exitApp();
+          },
+        });
         return true; // Cegah perilaku default (pop ke Login)
       };
 
@@ -510,101 +532,144 @@ export default function AdminDashboard({ navigation }: any) {
               translateY: detailSheetAnim.interpolate({ inputRange: [0, 1], outputRange: [800, 0] }) 
             }] 
           }]}>
-            {selectedEvent && (
-              <>
-                <Text style={styles.modalHeaderTitle}>Detail Event</Text>
-                <Text style={styles.modalEventName}>{selectedEvent.name}</Text>
-                <View style={styles.modalDetailsContainer}>
-                  <View style={styles.modalDetailRow}>
-                    <Image source={require('../assets/flaticon/calendar.png')} style={styles.modalDetailIcon} />
-                    <Text style={styles.modalEventDate}>{selectedEvent.date}</Text>
-                  </View>
-                  {selectedEvent.location && (
-                    <View style={styles.modalDetailRow}>
-                      <Image source={require('../assets/flaticon/land-location.png')} style={styles.modalDetailIcon} />
-                      <Text style={styles.modalEventLocation}>{selectedEvent.location}</Text>
+            {selectedEvent && (() => {
+              const detailIndex = (stats.events || []).findIndex(e => e.id === selectedEvent.id);
+              const detailTheme = getEventTheme(detailIndex >= 0 ? detailIndex : 0);
+
+              const tiers = [
+                {
+                  id: 'regular',
+                  label: 'Regular',
+                  icon: require('../assets/flaticon/tickets.png'),
+                  color: '#2563eb',
+                  bg: '#eff6ff',
+                  border: '#bfdbfe',
+                  sold: selectedEvent.sold_regular ?? 0,
+                  quota: selectedEvent.quota_regular ?? '—',
+                },
+                {
+                  id: 'silver',
+                  label: 'Silver',
+                  icon: require('../assets/flaticon/medal.png'),
+                  color: '#64748b',
+                  bg: '#f8fafc',
+                  border: '#e2e8f0',
+                  sold: selectedEvent.sold_silver ?? 0,
+                  quota: selectedEvent.quota_silver ?? '—',
+                },
+                {
+                  id: 'gold',
+                  label: 'Gold',
+                  icon: require('../assets/flaticon/crown.png'),
+                  color: '#d97706',
+                  bg: '#fffbeb',
+                  border: '#fde68a',
+                  sold: selectedEvent.sold_gold ?? 0,
+                  quota: selectedEvent.quota_gold ?? '—',
+                },
+                {
+                  id: 'vip',
+                  label: 'VIP',
+                  icon: require('../assets/flaticon/diamond.png'),
+                  color: '#dc2626',
+                  bg: '#fef2f2',
+                  border: '#fecaca',
+                  sold: selectedEvent.sold_vip ?? 0,
+                  quota: selectedEvent.quota_vip ?? '—',
+                },
+              ];
+
+              return (
+                <>
+                  {/* Drag Handle */}
+                  <View style={styles.dragHandleBar} />
+
+                  {/* Header: Thumbnail + Nama Event + Tombol Close (✕) */}
+                  <View style={styles.modalHeaderRow}>
+                    <View style={styles.modalHeaderLeft}>
+                      <View style={[styles.modalThumbnail, { backgroundColor: detailTheme.bg }]}>
+                        <Image source={detailTheme.icon} style={styles.modalThumbnailIcon} />
+                      </View>
+                      <View style={styles.modalTitleCol}>
+                        <Text style={styles.modalSheetTitle} numberOfLines={1}>
+                          {selectedEvent.name}
+                        </Text>
+                        <Text style={styles.modalSheetSub}>
+                          {selectedEvent.date}{selectedEvent.location ? ` • ${selectedEvent.location}` : ''}
+                        </Text>
+                      </View>
                     </View>
-                  )}
-                  {selectedEvent.time && (
-                    <View style={styles.modalDetailRow}>
-                      <Image source={require('../assets/flaticon/clock-three.png')} style={styles.modalDetailIcon} />
-                      <Text style={styles.modalEventTime}>{selectedEvent.time}</Text>
+
+                    <TouchableOpacity
+                      style={styles.modalCloseBtn}
+                      onPress={closeDetailModal}
+                      activeOpacity={0.75}
+                    >
+                      <Image
+                        source={require('../assets/flaticon/x-no-bg.png')}
+                        style={styles.modalCloseIcon}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Breakdown Penjualan per Tipe Tiket (Grid 2x2) */}
+                  <View style={styles.detailTierContainer}>
+                    <Text style={styles.detailTierHeader}>KUOTA & PENJUALAN TIKET</Text>
+                    <View style={styles.detailTierGrid}>
+                      {tiers.map(tier => (
+                        <View
+                          key={tier.id}
+                          style={[
+                            styles.detailTierCard,
+                            { backgroundColor: tier.bg, borderColor: tier.border },
+                          ]}
+                        >
+                          <View style={[styles.detailTierIconBadge, { borderColor: tier.border }]}>
+                            <Image
+                              source={tier.icon}
+                              style={[styles.detailTierIcon, { tintColor: tier.color }]}
+                            />
+                          </View>
+                          <View style={styles.detailTierInfo}>
+                            <Text style={[styles.detailTierLabel, { color: tier.color }]}>
+                              {tier.label}
+                            </Text>
+                            <Text style={styles.detailTierCount}>
+                              {tier.sold} / {tier.quota} tiket
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
                     </View>
-                  )}
-                </View>
+                  </View>
 
-                {/* Statistik tiket */}
-                <View style={styles.modalStatsGrid}>
-                  <View style={styles.modalStatBox}>
-                    <Text style={styles.modalStatVal}>{selectedEvent.total_sold}</Text>
-                    <Text style={styles.modalStatLbl}>Terjual</Text>
-                  </View>
-                  <View style={styles.modalStatBox}>
-                    <Text style={[styles.modalStatVal, { color: '#16a34a' }]}>{selectedEvent.total_active}</Text>
-                    <Text style={styles.modalStatLbl}>Aktif</Text>
-                  </View>
-                  <View style={styles.modalStatBox}>
-                    <Text style={[styles.modalStatVal, { color: '#dc2626' }]}>{selectedEvent.total_used}</Text>
-                    <Text style={styles.modalStatLbl}>Dipindai</Text>
-                  </View>
-                </View>
+                  {/* Tombol Aksi */}
+                  <TouchableOpacity
+                    style={styles.modalActionBtn}
+                    onPress={() => handleOpenScanner(selectedEvent)}
+                    activeOpacity={0.85}
+                  >
+                    <Image
+                      source={require('../assets/flaticon/qr-code.png')}
+                      style={styles.modalActionBtnIcon}
+                    />
+                    <Text style={styles.modalActionBtnText}>Mulai Pindai E-Tiket</Text>
+                  </TouchableOpacity>
 
-                {/* Breakdown penjualan per tipe tiket */}
-                <View style={styles.modalDescContainer}>
-                  <Text style={styles.modalDescHeader}>Penjualan per Tipe Tiket</Text>
-                  <View style={styles.ticketTypeRow}>
-                    <Text style={[styles.ticketTypeDot, { color: '#3b82f6' }]}>🔵</Text>
-                    <Text style={styles.ticketTypeLabel}>Regular</Text>
-                    <Text style={styles.ticketTypeCount}>
-                      {selectedEvent.sold_regular ?? 0} / {selectedEvent.quota_regular ?? '—'}
-                    </Text>
-                  </View>
-                  <View style={styles.ticketTypeRow}>
-                    <Text style={[styles.ticketTypeDot, { color: '#94a3b8' }]}>⚪</Text>
-                    <Text style={styles.ticketTypeLabel}>Silver</Text>
-                    <Text style={styles.ticketTypeCount}>
-                      {selectedEvent.sold_silver ?? 0} / {selectedEvent.quota_silver ?? '—'}
-                    </Text>
-                  </View>
-                  <View style={styles.ticketTypeRow}>
-                    <Text style={[styles.ticketTypeDot, { color: '#f59e0b' }]}>🟡</Text>
-                    <Text style={styles.ticketTypeLabel}>Gold</Text>
-                    <Text style={styles.ticketTypeCount}>
-                      {selectedEvent.sold_gold ?? 0} / {selectedEvent.quota_gold ?? '—'}
-                    </Text>
-                  </View>
-                  <View style={styles.ticketTypeRow}>
-                    <Text style={[styles.ticketTypeDot, { color: '#ef4444' }]}>🔴</Text>
-                    <Text style={styles.ticketTypeLabel}>VIP</Text>
-                    <Text style={styles.ticketTypeCount}>
-                      {selectedEvent.sold_vip ?? 0} / {selectedEvent.quota_vip ?? '—'}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Tombol aksi */}
-                <TouchableOpacity
-                  style={styles.modalActionBtn}
-                  onPress={() => handleOpenScanner(selectedEvent)}
-                >
-                  <Text style={styles.modalActionBtnText}>Mulai Pindai E-Tiket</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.modalHistoryBtn}
-                  onPress={() => handleOpenScanHistory(selectedEvent)}
-                >
-                  <Text style={styles.modalHistoryBtnText}>Riwayat Pemindaian</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.modalCloseBtn}
-                  onPress={closeDetailModal}
-                >
-                  <Text style={styles.modalCloseBtnText}>Tutup</Text>
-                </TouchableOpacity>
-              </>
-            )}
+                  <TouchableOpacity
+                    style={styles.modalHistoryBtn}
+                    onPress={() => handleOpenScanHistory(selectedEvent)}
+                    activeOpacity={0.85}
+                  >
+                    <Image
+                      source={require('../assets/flaticon/history.png')}
+                      style={styles.modalHistoryBtnIcon}
+                    />
+                    <Text style={styles.modalHistoryBtnText}>Riwayat Pemindaian</Text>
+                  </TouchableOpacity>
+                </>
+              );
+            })()}
           </Animated.View>
         </View>
       </Modal>
@@ -620,43 +685,82 @@ export default function AdminDashboard({ navigation }: any) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalHeaderTitle}>Buat Event Baru</Text>
+            {/* Drag Handle */}
+            <View style={styles.dragHandleBar} />
+
+            {/* Header: Judul + Tombol Close (✕) */}
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalHeaderLeft}>
+                <View style={[styles.modalThumbnail, { backgroundColor: '#eff6ff' }]}>
+                  <Image
+                    source={require('../assets/flaticon/event.png')}
+                    style={[styles.modalThumbnailIcon, { tintColor: '#2563eb' }]}
+                  />
+                </View>
+                <View style={styles.modalTitleCol}>
+                  <Text style={styles.modalSheetTitle}>Buat Event Baru</Text>
+                  <Text style={styles.modalSheetSub}>Isi data acara untuk membuka tiket</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={closeCreateModal}
+                disabled={createLoading}
+                activeOpacity={0.75}
+              >
+                <Image
+                  source={require('../assets/flaticon/x-no-bg.png')}
+                  style={styles.modalCloseIcon}
+                />
+              </TouchableOpacity>
+            </View>
 
             {/* Pesan error validasi inline */}
             {formError && (
               <View style={styles.formErrorBox}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={require('../assets/flaticon/triangle-warning.png')} style={{ width: 16, height: 16, tintColor: '#d97706', marginRight: 6 }} />
+                  <Image source={require('../assets/flaticon/triangle-warning.png')} style={{ width: 16, height: 16, tintColor: '#dc2626', marginRight: 6 }} />
                   <Text style={[styles.formErrorText, { flex: 1 }]}>{formError}</Text>
                 </View>
               </View>
             )}
 
+            {/* Form Input: Nama Acara */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>NAMA ACARA *</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="Minimal 8 karakter (mis. Konser Blackpink)"
-                placeholderTextColor="#94a3b8"
-                value={newEventName}
-                onChangeText={t => { setNewEventName(t); setFormError(null); }}
-                maxLength={100}
-              />
+              <View style={styles.formInputWithIcon}>
+                <Image
+                  source={require('../assets/flaticon/title.png')}
+                  style={styles.formInputIcon}
+                />
+                <TextInput
+                  style={styles.formInputText}
+                  placeholder="Minimal 8 karakter (mis. Konser Musik)"
+                  placeholderTextColor="#94a3b8"
+                  value={newEventName}
+                  onChangeText={t => { setNewEventName(t); setFormError(null); }}
+                  maxLength={100}
+                />
+              </View>
               <Text style={styles.formHint}>Minimal 8 karakter</Text>
             </View>
 
+            {/* Form Input: Tanggal Acara */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>TANGGAL ACARA *</Text>
               <TouchableOpacity
-                style={styles.formInputPicker}
+                style={styles.formInputWithIcon}
                 onPress={() => setDatePickerVisibility(true)}
+                activeOpacity={0.8}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={require('../assets/flaticon/calendar.png')} style={styles.inputPickerIcon} />
-                  <Text style={[styles.formInputPickerText, !newEventDate && { color: '#94a3b8' }]}>
-                    {newEventDate ? newEventDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pilih Tanggal Acara'}
-                  </Text>
-                </View>
+                <Image
+                  source={require('../assets/flaticon/calendar.png')}
+                  style={styles.formInputIcon}
+                />
+                <Text style={[styles.formInputText, !newEventDate && { color: '#94a3b8' }]}>
+                  {newEventDate ? newEventDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pilih Tanggal Acara'}
+                </Text>
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
@@ -670,30 +774,40 @@ export default function AdminDashboard({ navigation }: any) {
               />
             </View>
 
+            {/* Form Input: Lokasi Venue */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>LOKASI VENUE *</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="Minimal 8 karakter (mis. GBK Jakarta)"
-                placeholderTextColor="#94a3b8"
-                value={newEventLocation}
-                onChangeText={t => { setNewEventLocation(t); setFormError(null); }}
-                maxLength={100}
-              />
+              <View style={styles.formInputWithIcon}>
+                <Image
+                  source={require('../assets/flaticon/land-location.png')}
+                  style={styles.formInputIcon}
+                />
+                <TextInput
+                  style={styles.formInputText}
+                  placeholder="Minimal 8 karakter (mis. GBK Senayan)"
+                  placeholderTextColor="#94a3b8"
+                  value={newEventLocation}
+                  onChangeText={t => { setNewEventLocation(t); setFormError(null); }}
+                  maxLength={100}
+                />
+              </View>
             </View>
 
+            {/* Form Input: Waktu Mulai */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>WAKTU MULAI *</Text>
               <TouchableOpacity
-                style={styles.formInputPicker}
+                style={styles.formInputWithIcon}
                 onPress={() => setTimePickerVisibility(true)}
+                activeOpacity={0.8}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={require('../assets/flaticon/clock-three.png')} style={styles.inputPickerIcon} />
-                  <Text style={[styles.formInputPickerText, !newEventTime && { color: '#94a3b8' }]}>
-                    {newEventTime ? newEventTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'Pilih Waktu Acara'}
-                  </Text>
-                </View>
+                <Image
+                  source={require('../assets/flaticon/clock-three.png')}
+                  style={styles.formInputIcon}
+                />
+                <Text style={[styles.formInputText, !newEventTime && { color: '#94a3b8' }]}>
+                  {newEventTime ? newEventTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'Pilih Waktu Acara'}
+                </Text>
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={isTimePickerVisible}
@@ -709,25 +823,31 @@ export default function AdminDashboard({ navigation }: any) {
             </View>
 
             <TouchableOpacity
-              style={[styles.modalActionBtn, createLoading && { backgroundColor: '#94a3b8' }]}
+              style={[styles.modalActionBtn, { marginTop: 6 }, createLoading && { backgroundColor: '#94a3b8' }]}
               onPress={handleCreateEvent}
               disabled={createLoading}
+              activeOpacity={0.85}
             >
               <Text style={styles.modalActionBtnText}>
                 {createLoading ? 'Memproses...' : 'Simpan Event'}
               </Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalCloseBtn}
-              onPress={closeCreateModal}
-              disabled={createLoading}
-            >
-              <Text style={styles.modalCloseBtnText}>Batal</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
+      {/* Custom Dialog untuk Konfirmasi Keluar */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        confirmStyle={dialogConfig.confirmStyle}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+      />
 
       <Snackbar
         visible={snackbarVisible}

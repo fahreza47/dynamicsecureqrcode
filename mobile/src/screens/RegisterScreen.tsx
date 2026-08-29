@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL, AUTH_TOKEN_KEY, SESSION_KEY } from '../config';
 import { styles } from './RegisterScreen.styles';
+import CustomDialog, { DialogType } from '../components/CustomDialog';
 
 export default function RegisterScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -10,14 +21,46 @@ export default function RegisterScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // State untuk CustomDialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    visible: boolean;
+    type?: DialogType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmStyle?: 'default' | 'danger';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   const handleRegister = async () => {
     // Validasi input sebelum memanggil API
     if (username.trim().length < 3) {
-      Alert.alert('Validasi', 'Username minimal 3 karakter.');
+      setDialogConfig({
+        visible: true,
+        type: 'warning',
+        title: 'Validasi Username',
+        message: 'Username minimal terdiri dari 3 karakter.',
+        confirmText: 'Mengerti',
+        onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      });
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Validasi', 'Password minimal 6 karakter.');
+      setDialogConfig({
+        visible: true,
+        type: 'warning',
+        title: 'Validasi Password',
+        message: 'Password minimal terdiri dari 6 karakter.',
+        confirmText: 'Mengerti',
+        onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      });
       return;
     }
     try {
@@ -45,14 +88,37 @@ export default function RegisterScreen({ navigation }: any) {
           }),
         );
 
-        Alert.alert('Sukses', 'Akun berhasil dibuat. Silakan login.');
-        navigation.navigate('Login');
+        setDialogConfig({
+          visible: true,
+          type: 'success',
+          title: 'Pendaftaran Berhasil!',
+          message: 'Akun Anda berhasil dibuat. Silakan login untuk melanjutkan.',
+          confirmText: 'Login Sekarang',
+          onConfirm: () => {
+            setDialogConfig(prev => ({ ...prev, visible: false }));
+            navigation.navigate('Login');
+          },
+        });
       } else {
-        Alert.alert('Error', data.detail || 'Registrasi gagal.');
+        setDialogConfig({
+          visible: true,
+          type: 'error',
+          title: 'Registrasi Gagal',
+          message: data.detail || 'Terjadi kesalahan saat memproses pendaftaran.',
+          confirmText: 'Coba Lagi',
+          onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+        });
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Tidak dapat menghubungi server.');
+      setDialogConfig({
+        visible: true,
+        type: 'error',
+        title: 'Koneksi Gagal',
+        message: 'Tidak dapat menghubungi server. Periksa koneksi internet Anda.',
+        confirmText: 'Mengerti',
+        onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      });
     } finally {
       setLoading(false);
     }
@@ -61,7 +127,7 @@ export default function RegisterScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
           <View style={styles.header}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               {/* <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -128,12 +194,28 @@ export default function RegisterScreen({ navigation }: any) {
           </View>   
         </ScrollView>
       </KeyboardAvoidingView>
+
+
+      {/* Logo bawah — di luar View agar tidak ikut naik saat keyboard muncul */}
       <View style={styles.bottomLogo}>
-            <View style={styles.logoBox}>
-              <Image source={require('../assets/logo_aplikasi.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
-            </View>
-            <Text style={styles.logoText}>DYNAMIC SECURE QR CODE</Text>
-          </View>
+        <View style={styles.logoBox}>
+          <Image source={require('../assets/logo_aplikasi.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
+        </View>
+        <Text style={styles.logoText}>DYNAMIC SECURE QR CODE</Text>
+      </View>
+
+      {/* Custom Dialog untuk Validasi & Sukses Registrasi */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        confirmStyle={dialogConfig.confirmStyle}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+      />
     </SafeAreaView>
   );
 }

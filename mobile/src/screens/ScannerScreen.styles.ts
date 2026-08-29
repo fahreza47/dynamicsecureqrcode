@@ -146,12 +146,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: theme.colors.cardBackground,
+    backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    shadowColor: '#000',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -160,53 +160,120 @@ export const styles = StyleSheet.create({
   gateSelectorBtnLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  gateSelectorBtnEmoji: { 
-    fontSize: 20 
+  gateSelectorIconBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  gateSelectorIcon: {
+    width: 18,
+    height: 18,
   },
   gateSelectorBtnText: { 
-    fontSize: 14, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary 
+    fontSize: 13.5, 
+    fontWeight: '800', 
+    color: '#0f172a',
   },
   gateSelectorBtnId: { 
     fontSize: 11, 
     fontWeight: 'normal', 
-    color: theme.colors.textSecondary 
+    color: '#64748b',
   },
   gateSelectorBtnAction: { 
     fontSize: 12, 
-    fontWeight: 'bold' 
+    fontWeight: '800',
   },
 
-  // Modal styles
+  // Modal Gate Picker
   modalOverlay: { 
     flex: 1, 
-    backgroundColor: 'rgba(0,0,0,0.5)', 
-    justifyContent: 'flex-end' 
+    backgroundColor: 'rgba(15, 23, 42, 0.55)', 
+    justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: theme.colors.cardBackground, 
-    borderTopLeftRadius: 24, 
-    borderTopRightRadius: 24,
-    padding: 24, 
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    backgroundColor: '#ffffff', 
+    borderTopLeftRadius: 28, 
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20, 
+    paddingTop: 12,
+    paddingBottom: 28,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 12,
   },
-  modalTitle: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 4 
+  dragHandleBar: {
+    width: 38,
+    height: 4.5,
+    borderRadius: 2.5,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 12,
   },
-  modalSubtitle: { 
-    fontSize: 12, 
-    color: theme.colors.textSecondary, 
-    marginBottom: 20 
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  modalHeaderLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  modalThumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  modalThumbnailIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#2563eb',
+  },
+  modalTitleCol: {
+    flex: 1,
+  },
+  modalSheetTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  modalSheetSub: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  modalCloseIcon: {
+    width: 11,
+    height: 11,
+    tintColor: '#64748b',
   },
   modalGateList: { 
-    gap: 12, 
-    marginBottom: 24 
+    gap: 8, 
+    marginBottom: 8,
   },
   modalGateRow: {
     flexDirection: 'row',
@@ -217,43 +284,32 @@ export const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
   },
   modalGateRowLabel: { 
-    fontSize: 12, 
-    fontWeight: 'bold', 
-    color: theme.colors.textSecondary, 
-    flex: 1 
+    fontSize: 12.5, 
+    fontWeight: '800', 
+    color: '#475569', 
+    flex: 1,
   },
   modalGateLetterGroup: { 
     flexDirection: 'row', 
-    gap: 10 
+    gap: 8,
   },
   modalGateLetterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: theme.colors.border,
+    borderColor: '#e2e8f0',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8fafc',
   },
   modalGateLetterText: { 
-    fontSize: 14, 
-    fontWeight: 'bold', 
-    color: theme.colors.textSecondary 
+    fontSize: 13, 
+    fontWeight: '800', 
+    color: '#475569',
   },
   modalGateLetterTextActive: { 
-    color: theme.colors.white 
-  },
-  modalCloseBtn: { 
-    backgroundColor: '#f1f5f9', 
-    padding: 14, 
-    borderRadius: 12, 
-    alignItems: 'center' 
-  },
-  modalCloseBtnText: { 
-    fontSize: 14, 
-    fontWeight: 'bold', 
-    color: theme.colors.textSecondary 
+    color: '#ffffff',
   },
 
   // Area Kamera Riil
@@ -358,40 +414,35 @@ export const styles = StyleSheet.create({
   },
   syncButtonText: {
     color: '#ffffff',
-    fontSize: 11.5,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  syncButtonSubtext: {
-    color: '#eff6ff',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
-    marginTop: 1,
+    textAlign: 'center',
+    width: 80
   },
 
   // Kotak Auto Sync Sebelah Kanan
   autoSyncBoxHalf: {
-    flex: 1,
-    height: 52,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    justifyContent: 'center',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+  flex: 1,
+  // Hapus height: 52, biarkan fleksibel
+  backgroundColor: '#ffffff',
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: '#e2e8f0',
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  justifyContent: 'space-between', // penting: pisahkan header dan picker
+  shadowColor: '#0f172a',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.04,
+  shadowRadius: 6,
+  elevation: 2,
   },
   autoSyncHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginLeft: 4,
-    marginBottom: -4,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 4,
+  marginLeft: 2,
+  marginBottom: 0, // hilangkan margin negatif
   },
   autoSyncIcon: {
     width: 11,
@@ -399,22 +450,25 @@ export const styles = StyleSheet.create({
     tintColor: '#64748b',
   },
   autoSyncLabel: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: '700',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   syncPickerWrapper: {
-    height: 36,
-    justifyContent: 'center',
-    overflow: 'hidden',
+  // Hapus height: 36, biarkan menyesuaikan
+  justifyContent: 'center',
+  marginTop: -4, // sedikit naikkan agar dekat dengan header
   },
   syncPicker: {
-    height: 36,
-    color: '#0f172a',
-    width: '100%',
-    backgroundColor: 'transparent',
+  height: 50, // beri tinggi cukup
+  color: '#0f172a', // warna teks gelap
+  fontSize: 12,
+  fontWeight: '600',
+  backgroundColor: 'transparent',
+  // Android: pastikan tidak ada padding yang memotong
+  paddingHorizontal: 0,
   },
 
   // 4 Grid Statistik Pemindaian

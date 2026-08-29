@@ -1,0 +1,86 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    minHeight: 34,
+    marginTop: 3,
+  },
+  dropdownButtonText: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: '#0f172a',
+  },
+  dropdownChevron: {
+    fontSize: 12,
+    color: '#2563eb',
+    fontWeight: '800',
+    marginLeft: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.25)',
+  },
+  dropdownListContainer: {
+    position: 'absolute',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 8,
+    overflow: 'hidden',
+    paddingVertical: 4,
+    zIndex: 9999,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  dropdownItemLast: {
+    borderBottomWidth: 0,
+  },
+  radioCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#cbd5e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioCircleSelected: {
+    borderColor: '#2563eb',
+  },
+  radioSelectedDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: '#2563eb',
+  },
+  dropdownItemText: {
+    fontSize: 12.5,
+    color: '#475569',
+    marginLeft: 9,
+    fontWeight: '500',
+  },
+  dropdownItemTextSelected: {
+    fontWeight: '800',
+    color: '#2563eb',
+  },
+});

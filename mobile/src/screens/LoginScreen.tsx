@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
 import { styles } from './LoginScreen.styles';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Penyimpanan lokal persisten
 import { BASE_URL, SESSION_KEY, AUTH_TOKEN_KEY } from '../config';
+import CustomDialog, { DialogType } from '../components/CustomDialog';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -20,10 +20,35 @@ export default function LoginScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false); // Mencegah double-submit saat request berlangsung
 
+  // State untuk CustomDialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    visible: boolean;
+    type?: DialogType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmStyle?: 'default' | 'danger';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   const handleLogin = async () => {
     // Validasi sederhana sebelum memanggil API
     if (!username.trim() || !password.trim()) {
-      Alert.alert('Peringatan', 'Username dan password tidak boleh kosong.');
+      setDialogConfig({
+        visible: true,
+        type: 'warning',
+        title: 'Peringatan',
+        message: 'Username dan password tidak boleh kosong.',
+        confirmText: 'Mengerti',
+        onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      });
       return;
     }
     try {
@@ -57,11 +82,25 @@ export default function LoginScreen({ navigation }: any) {
           navigation.navigate('UserTabs');
         }
       } else {
-        Alert.alert('Login Gagal', data.detail || 'Username atau password salah.');
+        setDialogConfig({
+          visible: true,
+          type: 'error',
+          title: 'Login Gagal',
+          message: data.detail || 'Username atau password yang dimasukkan salah.',
+          confirmText: 'Coba Lagi',
+          onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+        });
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Tidak dapat menghubungi server. Periksa koneksi internet.');
+      setDialogConfig({
+        visible: true,
+        type: 'error',
+        title: 'Koneksi Gagal',
+        message: 'Tidak dapat menghubungi server. Periksa koneksi internet Anda.',
+        confirmText: 'Mengerti',
+        onConfirm: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      });
     } finally {
       setLoading(false); // Reset state loading apapun hasilnya
     }
@@ -140,11 +179,24 @@ export default function LoginScreen({ navigation }: any) {
         </View>
       </KeyboardAvoidingView>
       <View style={styles.bottomLogo}>
-            <View style={styles.logoBox}>
-              <Image source={require('../assets/logo_aplikasi.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
-            </View>
-            <Text style={styles.logoText}>DYNAMIC SECURE QR CODE</Text>
-          </View>
+        <View style={styles.logoBox}>
+          <Image source={require('../assets/logo_aplikasi.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
+        </View>
+        <Text style={styles.logoText}>DYNAMIC SECURE QR CODE</Text>
+      </View>
+
+      {/* Custom Dialog untuk Alert / Error Login */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        confirmStyle={dialogConfig.confirmStyle}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+      />
     </SafeAreaView>
   );
 }

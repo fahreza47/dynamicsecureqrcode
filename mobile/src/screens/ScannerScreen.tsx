@@ -28,7 +28,7 @@ import {
   StyleSheet,
   RefreshControl,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import CustomDropdown, { DropdownOption } from '../components/CustomDropdown';
 import * as OTPAuth from 'otpauth';           // Library TOTP RFC 6238
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
@@ -915,9 +915,15 @@ export default function ScannerScreen({ navigation }: any) {
         )}
         {blePermissionGranted !== false && isBluetoothOn === false && (
           <View style={[styles.bleUnsupportedBanner, { backgroundColor: '#FFF3CD', borderColor: '#FFC107' }]}>
-            <Text style={[styles.bleUnsupportedText, { color: '#856404' }]}>
-              📶 Bluetooth mati. Hidupkan Bluetooth, lalu tekan "Mulai" kembali.
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              <Image
+                source={require('../assets/flaticon/wi-fi.png')}
+                style={{ width: 14, height: 14, tintColor: '#856404', marginRight: 6, marginTop: 2 }}
+              />
+              <Text style={[styles.bleUnsupportedText, { color: '#856404', flex: 1 }]}>
+                Bluetooth mati. Hidupkan Bluetooth, lalu tekan "Mulai" kembali.
+              </Text>
+            </View>
           </View>
         )}
         {blePermissionGranted !== false && isBluetoothOn !== false && bleHardwareSupported === false && (
@@ -937,14 +943,20 @@ export default function ScannerScreen({ navigation }: any) {
           <TouchableOpacity
             style={[styles.gateSelectorBtn, { borderColor: selectedGate.color }]}
             onPress={() => setShowGateModal(true)}
+            activeOpacity={0.85}
           >
             <View style={styles.gateSelectorBtnLeft}>
-              <Text style={styles.gateSelectorBtnEmoji}>{selectedGate.emoji}</Text>
+              <View style={[styles.gateSelectorIconBadge, { backgroundColor: '#eff6ff' }]}>
+                <Image
+                  source={require('../assets/flaticon/gate.png')}
+                  style={[styles.gateSelectorIcon, { tintColor: selectedGate.color }]}
+                />
+              </View>
               <Text style={styles.gateSelectorBtnText}>
                 Gerbang {selectedGate.name} <Text style={styles.gateSelectorBtnId}>({selectedGate.id})</Text>
               </Text>
             </View>
-            <Text style={[styles.gateSelectorBtnAction, { color: '#007BFF' }]}>Pilih Gerbang ▼</Text>
+            <Text style={[styles.gateSelectorBtnAction, { color: '#2563eb' }]}>Pilih Gerbang ▾</Text>
           </TouchableOpacity>
         </View>
 
@@ -1009,9 +1021,8 @@ export default function ScannerScreen({ navigation }: any) {
                   source={require('../assets/flaticon/sync.png')}
                   style={styles.syncButtonIcon}
                 />
-                <Text style={styles.syncButtonText}>Sinkronkan Data</Text>
+                <Text style={styles.syncButtonText}>Sinkronkan Data E-Ticket</Text>
               </View>
-              <Text style={styles.syncButtonSubtext}>E-Ticket</Text>
             </View>
           </TouchableOpacity>
 
@@ -1024,19 +1035,16 @@ export default function ScannerScreen({ navigation }: any) {
               />
               <Text style={styles.autoSyncLabel}>Auto Sync:</Text>
             </View>
-            <View style={styles.syncPickerWrapper}>
-              <Picker
-                selectedValue={autoSyncInterval}
-                onValueChange={(val: number) => setAutoSyncInterval(val)}
-                style={styles.syncPicker}
-                dropdownIconColor="#2563eb"
-              >
-                <Picker.Item label="Mati" value={0} />
-                <Picker.Item label="1 Menit" value={1} />
-                <Picker.Item label="5 Menit" value={5} />
-                <Picker.Item label="10 Menit" value={10} />
-              </Picker>
-            </View>
+            <CustomDropdown
+              options={[
+                { label: 'Mati', value: 0 },
+                { label: '1 Menit', value: 1 },
+                { label: '5 Menit', value: 5 },
+                { label: '10 Menit', value: 10 },
+              ]}
+              selectedValue={autoSyncInterval}
+              onValueChange={(val) => setAutoSyncInterval(Number(val))}
+            />
           </View>
         </View>
 
@@ -1186,13 +1194,40 @@ export default function ScannerScreen({ navigation }: any) {
       <Modal
         visible={showGateModal}
         transparent
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowGateModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Pilih Gerbang Scanner</Text>
-            <Text style={styles.modalSubtitle}>Tentukan gerbang fisik yang sedang dijaga saat ini</Text>
+            {/* Drag Handle */}
+            <View style={styles.dragHandleBar} />
+
+            {/* Header: Thumbnail + Title + Close (✕) */}
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalHeaderLeft}>
+                <View style={styles.modalThumbnail}>
+                  <Image
+                    source={require('../assets/flaticon/gate.png')}
+                    style={styles.modalThumbnailIcon}
+                  />
+                </View>
+                <View style={styles.modalTitleCol}>
+                  <Text style={styles.modalSheetTitle}>Pilih Gerbang Scanner</Text>
+                  <Text style={styles.modalSheetSub}>Tentukan gerbang fisik yang sedang dijaga</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setShowGateModal(false)}
+                activeOpacity={0.75}
+              >
+                <Image
+                  source={require('../assets/flaticon/x-no-bg.png')}
+                  style={styles.modalCloseIcon}
+                />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.modalGateList}>
               {['regular', 'silver', 'gold', 'vip'].map(type => {
@@ -1220,6 +1255,7 @@ export default function ScannerScreen({ navigation }: any) {
                               setSelectedGateType(type);
                               setShowGateModal(false);
                             }}
+                            activeOpacity={0.8}
                           >
                             <Text
                               style={[
@@ -1237,13 +1273,6 @@ export default function ScannerScreen({ navigation }: any) {
                 );
               })}
             </View>
-
-            <TouchableOpacity
-              style={styles.modalCloseBtn}
-              onPress={() => setShowGateModal(false)}
-            >
-              <Text style={styles.modalCloseBtnText}>Batal</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>

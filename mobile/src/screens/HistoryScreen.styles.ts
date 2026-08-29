@@ -77,6 +77,7 @@ export const styles = StyleSheet.create({
   eventThumbnailIcon: {
     width: 26,
     height: 26,
+    tintColor: '#ffffff',
   },
   eventInfoCol: {
     flex: 1,

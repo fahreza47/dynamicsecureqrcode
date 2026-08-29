@@ -289,214 +289,233 @@ export const styles = StyleSheet.create({
     padding: 24 
   },
   modalContent: { 
-    backgroundColor: theme.colors.cardBackground, 
-    borderRadius: 24, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 28, 
     width: '100%', 
-    padding: 24, 
-    shadowColor: '#000', 
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+    shadowColor: '#0f172a', 
     shadowOffset: { width: 0, height: 10 }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 20, 
-    elevation: 8, 
-    borderWidth: 1, 
-    borderColor: theme.colors.border 
+    shadowOpacity: 0.15, 
+    shadowRadius: 24, 
+    elevation: 12, 
   },
-  modalHeaderTitle: { 
-    fontSize: 11, 
-    fontWeight: 'bold', 
-    color: theme.colors.textSecondary, 
-    letterSpacing: 1, 
-    textTransform: 'uppercase', 
-    marginBottom: 8 
+  dragHandleBar: {
+    width: 38,
+    height: 4.5,
+    borderRadius: 2.5,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 12,
   },
-  modalEventName: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 4 
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  modalEventDate: { 
-    fontSize: 12, 
-    color: theme.colors.textSecondary 
+  modalHeaderLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
   },
-  modalStatsGrid: { 
-    flexDirection: 'row', 
-    gap: 10, 
-    marginBottom: 20 
+  modalThumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
-  modalStatBox: { 
-    flex: 1, 
-    backgroundColor: theme.colors.background, 
-    borderWidth: 1, 
-    borderColor: theme.colors.border, 
-    borderRadius: 12, 
-    padding: 12, 
-    alignItems: 'center' 
+  modalThumbnailIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#ffffff',
   },
-  modalStatVal: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 2 
+  modalTitleCol: {
+    flex: 1,
   },
-  modalStatLbl: { 
-    fontSize: 10, 
-    color: theme.colors.textSecondary, 
-    fontWeight: 'bold' 
+  modalSheetTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 2,
   },
-  modalDescContainer: { 
-    backgroundColor: theme.colors.background, 
-    borderRadius: 14, 
-    padding: 14, 
-    borderWidth: 1, 
-    borderColor: theme.colors.border, 
-    marginBottom: 24 
+  modalSheetSub: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
   },
-  modalDescHeader: { 
-    fontSize: 11, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary, 
-    marginBottom: 4 
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  modalDescText: { 
-    fontSize: 11, 
-    color: theme.colors.textSecondary, 
-    lineHeight: 16 
-  },
-  modalActionBtn: { 
-    backgroundColor: theme.colors.primary, 
-    padding: 14, 
-    borderRadius: 14, 
-    alignItems: 'center', 
-    marginBottom: 8 
-  },
-  modalActionBtnText: { 
-    color: theme.colors.white, 
-    fontSize: 14, 
-    fontWeight: 'bold' 
-  },
-  modalHistoryBtn: { 
-    backgroundColor: theme.colors.background, 
-    borderWidth: 1, 
-    borderColor: theme.colors.border, 
-    padding: 14, 
-    borderRadius: 14, 
-    alignItems: 'center', 
-    marginBottom: 8 
-  },
-  modalHistoryBtnText: { 
-    color: theme.colors.textPrimary, 
-    fontSize: 14, 
-    fontWeight: 'bold' 
-  },
-  modalCloseBtn: { 
-    padding: 12, 
-    alignItems: 'center' 
-  },
-  modalCloseBtnText: { 
-    color: theme.colors.textSecondary, 
-    fontSize: 12, 
-    fontWeight: 'bold' 
-  },
-  modalEventLocation: { 
-    fontSize: 12, 
-    color: theme.colors.textSecondary 
-  },
-  modalEventTime: { 
-    fontSize: 12, 
-    color: theme.colors.textSecondary 
-  },
-  modalDetailsContainer: { 
-    marginBottom: 20, 
-    gap: 8 
-  },
-  modalDetailRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
-  },
-  modalDetailIcon: { 
-    width: 14, 
-    height: 14, 
-    tintColor: '#6c757d', 
-    marginRight: 8 
-  },
-  ticketTypeRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingVertical: 5, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#f1f5f9' 
-  },
-  ticketTypeDot: { 
-    fontSize: 13, 
-    marginRight: 8 
-  },
-  ticketTypeLabel: { 
-    flex: 1, 
-    fontSize: 12, 
-    color: theme.colors.textSecondary 
-  },
-  ticketTypeCount: { 
-    fontSize: 12, 
-    fontWeight: 'bold', 
-    color: theme.colors.textPrimary 
+  modalCloseIcon: {
+    width: 11,
+    height: 11,
+    tintColor: '#64748b',
   },
 
-  // Form Styles
+  // Tier breakdown di modal detail
+  detailTierContainer: {
+    marginBottom: 14,
+  },
+  detailTierHeader: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#64748b',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  detailTierGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  detailTierCard: {
+    width: '48.5%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 9,
+    borderRadius: 14,
+    borderWidth: 1.2,
+  },
+  detailTierIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+  },
+  detailTierIcon: {
+    width: 16,
+    height: 16,
+  },
+  detailTierInfo: {
+    flex: 1,
+  },
+  detailTierLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 1,
+  },
+  detailTierCount: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+
+  // Action Buttons
+  modalActionBtn: { 
+    flexDirection: 'row',
+    backgroundColor: '#2563eb', 
+    height: 44, 
+    borderRadius: 14, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginBottom: 8,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
+    gap: 6,
+  },
+  modalActionBtnIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#ffffff',
+  },
+  modalActionBtnText: { 
+    color: '#ffffff', 
+    fontSize: 13, 
+    fontWeight: '800',
+  },
+  modalHistoryBtn: { 
+    flexDirection: 'row',
+    backgroundColor: '#eff6ff', 
+    borderWidth: 1, 
+    borderColor: '#bfdbfe', 
+    height: 44, 
+    borderRadius: 14, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    gap: 6,
+  },
+  modalHistoryBtnIcon: {
+    width: 15,
+    height: 15,
+    tintColor: '#2563eb',
+  },
+  modalHistoryBtnText: { 
+    color: '#2563eb', 
+    fontSize: 13, 
+    fontWeight: '700',
+  },
+
+  // Form Styles (Buat Event Baru)
   formGroup: { 
-    marginBottom: 16 
+    marginBottom: 12,
   },
   formLabel: { 
-    fontSize: 9, 
-    fontWeight: 'bold', 
-    color: theme.colors.textSecondary, 
+    fontSize: 9.5, 
+    fontWeight: '800', 
+    color: '#64748b', 
     letterSpacing: 0.8, 
-    marginBottom: 6 
+    marginBottom: 5,
+    textTransform: 'uppercase',
   },
-  formInput: { 
-    backgroundColor: theme.colors.background, 
-    borderWidth: 1, 
-    borderColor: theme.colors.border, 
-    borderRadius: 8, 
-    padding: 12, 
-    fontSize: 13, 
-    color: theme.colors.textPrimary 
+  formInputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    minHeight: 44,
+  },
+  formInputIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#2563eb',
+    marginRight: 10,
+  },
+  formInputText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#0f172a',
+    paddingVertical: 8,
   },
   formHint: { 
     fontSize: 10, 
-    color: theme.colors.textSecondary, 
-    marginTop: 4 
+    color: '#94a3b8', 
+    marginTop: 3,
+    marginLeft: 2,
   },
   formErrorBox: {
     backgroundColor: '#fef2f2', 
-    borderRadius: 10, 
+    borderRadius: 12, 
     padding: 10,
     borderWidth: 1, 
     borderColor: '#fecaca', 
-    marginBottom: 14,
+    marginBottom: 12,
   },
   formErrorText: { 
     fontSize: 12, 
-    color: theme.colors.danger, 
-    lineHeight: 17 
-  },
-  formInputPicker: {
-    backgroundColor: theme.colors.background,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    padding: 12,
-    justifyContent: 'center',
-    minHeight: 46,
-  },
-  formInputPickerText: {
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-  },
-  inputPickerIcon: {
-    width: 16,
-    height: 16,
-    tintColor: theme.colors.primary,
-    marginRight: 10,
+    color: '#dc2626', 
+    lineHeight: 17,
   },
 });

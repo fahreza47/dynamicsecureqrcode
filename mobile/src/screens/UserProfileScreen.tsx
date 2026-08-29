@@ -28,6 +28,7 @@ import { SESSION_KEY, AUTH_TOKEN_KEY, getTicketsKey, BASE_URL } from '../config'
 import { authFetch } from '../utils/authFetch';
 import Snackbar from '../components/Snackbar';
 import AppHeader from '../components/AppHeader';
+import CustomDialog, { DialogType } from '../components/CustomDialog';
 import { styles } from './UserProfileScreen.styles';
 
 type Session = {
@@ -51,6 +52,24 @@ export default function UserProfileScreen({ navigation }: any) {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<'success' | 'error' | 'info'>('success');
+
+  // State untuk CustomDialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    visible: boolean;
+    type?: DialogType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmStyle?: 'default' | 'danger';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   const showSnackbar = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
     setSnackbarMessage(msg);
@@ -101,18 +120,22 @@ export default function UserProfileScreen({ navigation }: any) {
   };
 
   const handleLogout = () => {
-    Alert.alert('Konfirmasi Logout', 'Apakah kamu yakin ingin keluar?', [
-      { text: 'Batal', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
-          await AsyncStorage.removeItem(SESSION_KEY);
-          navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Auth' }] });
-        },
+    setDialogConfig({
+      visible: true,
+      type: 'confirm',
+      title: 'Konfirmasi Logout',
+      message: 'Apakah kamu yakin ingin keluar dari akun ini?',
+      cancelText: 'Batal',
+      confirmText: 'Logout',
+      confirmStyle: 'danger',
+      onCancel: () => setDialogConfig(prev => ({ ...prev, visible: false })),
+      onConfirm: async () => {
+        setDialogConfig(prev => ({ ...prev, visible: false }));
+        await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+        await AsyncStorage.removeItem(SESSION_KEY);
+        navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Auth' }] });
       },
-    ]);
+    });
   };
 
   /** Simpan asal daerah ke backend dan update sesi lokal */
@@ -376,6 +399,19 @@ export default function UserProfileScreen({ navigation }: any) {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Custom Dialog untuk Konfirmasi Logout */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        confirmStyle={dialogConfig.confirmStyle}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+      />
 
       {/* Snackbar Notifikasi */}
       <Snackbar

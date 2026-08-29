@@ -339,6 +339,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
     gap: 6,
+    marginHorizontal: '20%',
   },
   logoutText: { 
     color: '#ffffff', 
